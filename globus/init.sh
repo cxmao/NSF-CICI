@@ -4,11 +4,19 @@
 
 
 #GLOBAL 
+
 DTN="//newy-dtn.es.net:2811/data1/100G.dat" 
 DEST="/home/cmao/share/"
 FLOWS="4"
 
 
-#INITIALIZE 
+# INITIALIZE
+#To-do: Start Bro and Redirect LOGS
 
- globus-url-copy -vb -fast -p 4 ftp:$DTN file:$DEST
+# Start Globus transfer
+ globus-url-copy -vb -fast -p $FLOWS ftp:$DTN file:$DEST
+
+
+# COLLECT DATA
+#To-do: COLLECT PROC DATA
+
