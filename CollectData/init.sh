@@ -17,7 +17,7 @@ echo $TIMESTAMP $DATESTAMP $PWD
 
 
 #GLOBUS PARAMETERS
-DTN="//newy-dtn.es.net:2811/data1/10G.dat" 
+DTN="//newy-dtn.es.net:2811/data1/10M.dat" 
 DEST="/home/cmao/share/"
 FLOWS="4"
 PROTOCOL="ftp"
@@ -80,20 +80,21 @@ echo "Initializing Bro"
 
 
 # Start Globus transfer
-#globus-url-copy -vb -fast -p $FLOWS ftp:$DTN file:$DEST
-#globus_pid=$$
-#echo $globus_pid
+globus-url-copy -vb -fast -p $FLOWS ftp:$DTN file:$DEST &
+globus_pid=$!
+echo $globus_pid
+wait $globus_pid 
+echo "Globus finished transfer"
 #================================================================================================================
 # 
 # TERMINATE 
 #
-#==============================================================================================================
-
-
-#wait $globus_pid
+#============================================================================================================
 #Terminate all children processes of Bro and Collectl 
-for pid in $(ps -ef | grep "bro\|collectl" | awk '{print $3}');
-	 do kill -9 $pid; 
+echo "TERMINATING"
+for pid in $(ps -ef | grep "zeek\|collectl" | awk '{print $2}');
+	do kill -9 $pid; 
+	echo "Killed" $pid
 done
 echo "Done"
 
