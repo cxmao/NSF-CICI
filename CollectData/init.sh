@@ -10,7 +10,6 @@
 # GLOBAL VARIABLES
 #
 #=================================================================================================================
-PWD=$(pwd)
 DATESTAMP=$(date +"%Y-%m-%d")
 TIMESTAMP=$(date +"%Y-%m-%d-%H:%M:%S")
 echo $TIMESTAMP $DATESTAMP $PWD
@@ -23,14 +22,14 @@ FLOWS="4"
 PROTOCOL="ftp"
 
 #BRO PARAMETERS
-BRODIR=$PWD"/brologs"
+BRODIR=$(pwd)"/brologs"
 BROLOGS="$TIMESTAMP"
 BROPATH="$BRODIR"/"$BROLOGS""/"
 NETWORK_INTERFACE="eth3"
 BROSCRIPT="" 
 
 #COLLECTL PARAMETERS
-COLLECTLDIR=$PWD"/collectl" 
+COLLECTLDIR=$(pwd)"/collectl" 
 COLLECTLFILE="$TIMESTAMP" 
 COLLECTLPATH="$COLLECTLDIR"/"$COLLECTLFILE"
 COLLECTLCOMMAND="-sCD"
@@ -77,7 +76,7 @@ collectl -sCD -P -f$COLLECTLPATH &
 echo "Initializing Bro"
 /usr/local/zeek/bin/bro -i $NETWORK_INTERFACE $BROSCRIPT &
 
-
+sleep 60
 
 # Start Globus transfer
 globus-url-copy -vb -fast -p $FLOWS ftp:$DTN file:$DEST &
