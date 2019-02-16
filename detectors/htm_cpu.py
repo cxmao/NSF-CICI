@@ -3,32 +3,27 @@
 # Uses the Nupic Online Prediction Framework (OPF) API
 # Source code: https://github.com/numenta/nupic/blob/master/examples/opf/clients/hotgym/anomaly/hotgym_anomaly.py
 # Description: 
-# 
 #
+# To-do: Unzip file and stream 
+# To-do: Multiencoder for all fields 
+# To-do: Add function documentation
+#-------------------------------------------------------------------------------------------------------
 import os
 import csv
 import datetime
 import cpu_model_params
-import yaml
 from nupic.frameworks.opf.model_factory import ModelFactory
 
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-_MODEL_PARAMS_PATH = os.path.join(_CURRENT_DIR, "cpu_model_params.yaml")
-
 _OUTPUT_PATH = "anomaly_scores.csv"
-
-print(_MODEL_PARAMS_PATH)
-
-
-#--------------------------------------------------------------------------------
 # Data File Paths 
 _CPU_DATA_PATH = "/home/cmao/Repos/nsf-cici/data/collectl/kelewan-20190208.cpu"
 _DISK_DATA_PATH = "/home/cmao/Repos/nsf-cici/data/collectl/kelewan-20190208.dsk"
 _FiELD_SELECTOR = 10
 
-# To-do: Unzip file
-# To-do: Encode CPU File into one value
+
+#---------------------------------------------------------------------------------------------------------
 
 
 def Get_CPU_data(datasetpath, field):
