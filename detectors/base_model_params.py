@@ -72,7 +72,7 @@ MODEL_PARAMS = {
 
                 u'total_utilization':    {
                     'clipInput': True,
-                    'fieldname': u'[CPU:0]Intrpt',
+                    'fieldname': u'${fieldname}',
                     'maxval': 100.0,
                     'minval': 0.0,
                     'n': 50,
