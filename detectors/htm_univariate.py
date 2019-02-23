@@ -2,7 +2,8 @@
 # Date Crated: 14 February 2019
 # Uses the Nupic Online Prediction Framework (OPF) API
 # Source code: https://github.com/numenta/nupic/blob/master/examples/opf/clients/hotgym/anomaly/hotgym_anomaly.py
-# Description: 
+# Description: Creates and runs a HTM model for each field for a given Collectl Plot  file.
+# Model parameters are given by base_model_params.py
 # 
 # To-do: Fix hard-coded file paths
 # To-do: Multiple files - continuous stream  
@@ -44,10 +45,8 @@ def GetFieldName(header,index):
 	"""
 	Description:
 		Get the log field name
-
 	Parameters:
 		index - <int> index of _FIELD_SELECTOR
-
 	Returns:
 		aField - <string> Corresponding field name in the given Collectl Log
 	"""
@@ -94,11 +93,9 @@ def GetData(datapath, field):
 	    each row entry into a dictionary with keys:
 	    * Timestamp
 	    * Field 
-
-    Parameters:
+	Parameters:
 	    datapath - <string> File path to Collectl Plot formatted files
 	    field  - <int> field specifier based off given Collectl fields
-    
     Returns: <tuple>
 		headers - <list> of all field headers
 	    modelInput - <list of dicts> of timestamp and selected field value
@@ -142,7 +139,7 @@ def CreateModel(params):
 	Parameters: 
 		params - <dict> taken from model parameters JSON
 	Return: 
-		
+		Model instance
 	"""
 	return ModelFactory.create(params)
 
