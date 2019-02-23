@@ -1,56 +1,43 @@
+"""
+Author: Christina Mao
+Date Created: 22 February 2019
+Description: Plot all csv files generated from htm_univariate.py in '/results' and saves them to '/plots'
+"""
 import os
 import pandas as pd
 import plotly as py
-import plotly.io as pio #To save static images
-import cufflinks as cf #if using Plotly Pandas API
 import plotly.graph_objs as go 
+import plotly.io as pio #To save static images
 
-#To-do:
+#If $Conda install -c plotly plotly.orca fails, specify the full path 
+py.io.orca.config.executable = '/home/cmao/anaconda2/bin/orca' 
+
+_RESULTS_DIR = os.getcwd() + '/results'
+
 
 def PlotResults(csvfile):
-	"""
-	Description: 
+	"""-
+	Description: Takes a @csvfile generated from htm_univariate.py and plots its on two Y-axes. 
+	Plots are saved as PNG files to current directory
 	Parameters: 
 		csvfile <string> full file path
 	Returns: 
+		Null
 	"""
 
-	# Load with Pandas Dataframe
+	# Load CSV file with Pandas dataframe
 	df = pd.read_csv(csvfile, sep=',')
-	print(df.head())
+	keys = df.keys()
 
-
-	# With Plotly 
-	'''
-	py.offline.plot({
-			"data": [
-				go.Scatter(
-					x=df['timestamp'],
-					y=df['[DSK:sda]WKBytes']
-				)
-			]
-		}, auto_open=True)
-	'''
-
-	# Double Y-axis with Pandas
-	'''
-	fig1 = df.iplot(columns=['timestamp', '[DSK:sda]WKBytes'], kind='bar', asFigure=True)
-	fig2 = df.iplot(columns=['timestamp', 'anomaly_score'], 
-		 secondary_y=['timestamp', 'anomaly_score'], asFigure=True)
-	fig2['data'].extend(fig1['data'])
-	py.iplot(fig2, filename='results/plots/multiple_yaxis')
-	'''
-
-
-	# Double Y-axis Python
+	# Double Axes
 	trace1 = go.Scatter(
 					x=df['timestamp'],
-					y=df['[DSK:sda]WKBytes'],
-					name='[DSK:sda]WKByte',
+					y=df[keys[1]],
+					name=keys[1]
 				)
 	trace2 = go.Scatter(
 					x=df['timestamp'],
-					y=df['anomaly_score'],
+					y=df[keys[2]],
 					name='Anomaly Score',
 					yaxis='y2',
 					mode='lines+markers',
@@ -59,7 +46,7 @@ def PlotResults(csvfile):
 
 	data = [trace1, trace2]
 	layout = go.Layout(
-		title='Double Y Axis Example',
+		title= "Hierarchical Temporal Memory Anomaly Scores",
 		xaxis=dict(
 			title='Date & Time'
 		),
@@ -79,15 +66,21 @@ def PlotResults(csvfile):
 		)
 	)
 	fig = go.Figure(data=data, layout=layout)
-	py.offline.plot(fig, filename='multiple_yaxis', auto_open=True)
-
-	#Create directory to store plot images
-	if not os.path.exists('plots'):
-		os.mkdir('plots')
+	py.offline.plot(fig, filename= keys[1], auto_open=True) # View plot in browser
 	# Save as PNG
-	#pio.write_image(fig, 'plots/multiple_yaxis.png')
-
+	pio.write_image(fig, keys[1] + '.png')
 	return 
 
+
+def main():
+	# Create directory to store plot images
+	if not os.path.exists('plots'):
+		os.mkdir('plots')
+	os.chdir('plots')
+	# Create plots for all files in directory 
+	for filename in os.listdir(_RESULTS_DIR):
+		PlotResults(_RESULTS_DIR + "/" + filename)
+
+
 if __name__ == '__main__':
-	PlotResults("/home/cmao/Repos/nsf-cici/detectors/results/[DSK:sda]WKBytes_anomaly_scores.csv")
+	main()
