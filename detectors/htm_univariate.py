@@ -1,14 +1,16 @@
-# Author: Christina Mao 
-# Date Crated: 14 February 2019
-# Uses the Nupic Online Prediction Framework (OPF) API
-# Source code: https://github.com/numenta/nupic/blob/master/examples/opf/clients/hotgym/anomaly/hotgym_anomaly.py
-# Description: Creates and runs a HTM model for each field for a given Collectl Plot  file.
-# Model parameters are given by base_model_params.py
-# 
-# To-do: Fix hard-coded file paths
-# To-do: Multiple files - continuous stream  
-# To-do: Multiencoder for all fields 
-# To-do: Add function documentation
+""" 
+Author: Christina Mao 
+Date Created: 14 February 2019
+Uses the Nupic Online Prediction Framework (OPF) API
+Source code: https://github.com/numenta/nupic/blob/master/examples/opf/clients/hotgym/anomaly/hotgym_anomaly.py
+Description: Creates and runs a HTM model for each field for a given Collectl Plot  file.
+Model parameters are given by base_model_params.py. Anomaly scores are written out to csv files in '/results'
+
+To-do: Fix hard-coded file paths
+To-do: Multiple files - continuous stream  
+To-do: Multiencoder for all fields 
+To-do: Add function documentation
+"""
 #-------------------------------------------------------------------------------------------------------
 import os
 import csv
@@ -29,16 +31,36 @@ _BASE_MODEL_PARAMS_PATH = _DIR + "/base_model_params.py"
 _CSV_NAME = "_anomaly_scores.csv"
 
 # Data Path
-_CPU_DATA_PATH = "/home/cmao/Repos/nsf-cici/data/collectl/kelewan-20190215.cpu"
-_DISK_DATA_PATH = "/home/cmao/Repos/nsf-cici/data/collectl/kelewan-20190208.dsk"
+_DATA_PATH = "/home/cmao/Repos/nsf-cici/data/collectl/kelewan-20190220.numa"
+_OUTPUT_PATH = _DIR + '/results/' + filter(str.isdigit, _DATA_PATH) + '/'
 
 # Model variables 
+_ALL = True
 # Select based on Collectl log headers
 #_FIELD_SELECTOR = [13, 25, 37, 49, 61, 73, 85, 97] #CPU Interrupts
-_FIELD_SELECTOR = [5,9] #Disk Read/Writes
+_FIELD_SELECTOR = [5, 9] #Disk Read/Writes
+
 _ANOMALY_THRESHOLD = 0.80
 
 #---------------------------------------------------------------------------------------------------------
+
+
+def GetHeader(filepath):
+	"""
+	Description:
+		Get header fields from csv file path
+	Parameters:
+		datapath - <string>  full file path 
+	Returns:
+		header - <list> 
+	"""
+	header = []
+	with open(filepath) as f: 
+		reader = csv.reader(f)
+		for row in  reader:
+			if (row[0] == '#Date' and not header):
+				header = row
+	return header
 
 
 def GetFieldName(header,index):
@@ -68,8 +90,7 @@ def SetModelParams(filename,field):
 	"""
 	if not (os.path.exists(_DIR + '/config')):
 		os.mkdir(_DIR + '/config')
-
-	#Create a new Python file
+	#Create a new configuration Python file 
 	with open(_DIR + '/config/' + filename, "w+") as f:
 		data = json.dumps(mp.MODEL_PARAMS, sort_keys=False, indent=4)#Convert python object to a serialized JSON string 
 		# Modify parameters in the new file
@@ -86,21 +107,21 @@ def SetModelParams(filename,field):
 	return dictdump
 
 
-def GetData(datapath, field):
+def GetData(logs, field):
 	"""
 	Description:
-	    Takes default Collectl Plot files and converts 
-	    each row entry into a dictionary with keys:
+	    Formats @collectl into NuPIC data file. Takes default Collectl Plot files and converts each row entry 
+	    into a dictionary with keys:
 	    * Timestamp
 	    * Field 
 	Parameters:
 	    datapath - <string> File path to Collectl Plot formatted files
 	    field  - <int> field specifier based off given Collectl fields
-    Returns: <tuple>
+	Returns: <tuple>
 		headers - <list> of all field headers
 	    modelInput - <list of dicts> of timestamp and selected field value
 	"""
-	with open(datapath) as openfile:
+	with open(logs) as openfile:
 		reader = csv.reader(openfile)
 		header = []
 		modelInputHdr = []
@@ -117,19 +138,19 @@ def GetData(datapath, field):
 				header = row
 
 			# Format into a record dictionary
-			elif (row[0].isdigit()):
+			elif (row[0].isdigit()): 
 				# Format date string to a datetime format
 				date_string = row[0][0:4] + "-" + row[0][4:6] + "-" + row[0][6:8] + " " + row[1]
 				# Cast to a datetime object
 				timestamp_value = datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S")
-				# Cast to float type
-				field_value = float(row[field])
-
-				record_value.append(timestamp_value)
-				record_value.append(field_value)
-
-				record = dict(zip(modelInputHdr, record_value))
-				modelInput.append(record)
+				if(str.isdigit(row[field])):
+					# Cast to float type
+					field_value = float(row[field])
+					# Write to record dictionary
+					record_value.append(timestamp_value)
+					record_value.append(field_value)
+					record = dict(zip(modelInputHdr, record_value))
+					modelInput.append(record)
 	return header, modelInput
 
 
@@ -164,9 +185,9 @@ def RunModel(params, data, field):
 	model = CreateModel(params)
 	model.enableInference({"predictedField": field})#Use the field name, not the encoder name
 	
-	if not os.path.exists(_DIR + '/results'):
-		os.mkdir(_DIR + '/results')
-	os.chdir(_DIR + '/results')
+	if not os.path.exists(_OUTPUT_PATH):
+		os.mkdir(_OUTPUT_PATH)
+	os.chdir(_OUTPUT_PATH)
 
 	csvWriter = csv.writer(open(field + _CSV_NAME, "wb"))
 	csvWriter.writerow(["timestamp", field, "anomaly_score"])
@@ -180,24 +201,34 @@ def RunModel(params, data, field):
 		# Append Anomaly Score and write out results to CSV file
 		anomalyScore = results[i].inferences['anomalyScore']
 		csvWriter.writerow([data[1][i]['timestamp'], data[1][i][field], anomalyScore]) 
-	print("Results written to " + _DIR + "/results/" + field + _CSV_NAME)
-	
+	print("Results written to " + _OUTPUT_PATH + field + _CSV_NAME)
 
 	# Online Results
-	# Logger
+	'''
+	# Write to Logger 
 	if anomalyScore > _ANOMALY_THRESHOLD:
 		_LOGGER.basicConfig(filename='anomaly.log', level=logging.INFO)
 		_LOGGER.info("Anomaly detected at [%s]. Anomaly score: %f.",
                     result.rawInput["timestamp"], anomalyScore)
+	'''
 	return 0
 
-
-def main():
-	for i in range(len(_FIELD_SELECTOR)):
-		modelInput = GetData(_DISK_DATA_PATH, _FIELD_SELECTOR[i])
-		fieldName = GetFieldName(modelInput[0],_FIELD_SELECTOR[i])
-		modelParams = SetModelParams(fieldName + ".py", fieldName)
-		RunModel(modelParams, modelInput, fieldName)
-
+	
 if __name__ == "__main__":
-	main()
+	if(not _ALL):
+		for i in range(len(_FIELD_SELECTOR)):
+			modelInput = GetData(_DATA_PATH, _FIELD_SELECTOR[i])
+			fieldName = GetFieldName(modelInput[0],_FIELD_SELECTOR[i])
+			modelParams = SetModelParams(fieldName + ".py", fieldName)
+			RunModel(modelParams, modelInput, fieldName)
+	else:
+		header = GetHeader(_DATA_PATH)
+		for i in range(2, len(header)):
+			# Check if results exist, then skip
+			if (os.path.isfile(_OUTPUT_PATH + header[i] + _CSV_NAME)):
+				modelInput = GetData(_DATA_PATH, i)
+				if (modelInput[1] != []):#Input data is not empty
+					fieldName = GetFieldName(modelInput[0], i)
+					modelParams = SetModelParams(fieldName + ".py", fieldName)
+					print ("Running Model for " + header[i])
+					RunModel(modelParams, modelInput, fieldName)
