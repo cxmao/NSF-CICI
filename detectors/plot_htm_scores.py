@@ -3,6 +3,9 @@ Author: Christina Mao
 Date Created: 22 February 2019
 Description: Plot all csv files generated from htm_univariate.py in '/results' and saves them to '/plots'. 
 Specify directory path  with _RESULTS_DIR
+To-do: Fix Axes alignment if Y1 has 0s
+To-do: Save as PDF instead of PNG
+To-do: Subplot option  for same 
 """
 import os
 import pandas as pd
@@ -76,8 +79,9 @@ def PlotResults(csvfile):
 	# Generate HTML file and view in browser
 	py.offline.plot(fig, filename= keys[1] + '.html', auto_open=False) 
 	# Save as PNG file
-	pio.write_image(fig, keys[1] + '.png')
+	pio.write_image(fig, keys[1] + '.pdf')
 	return 
+
 
 if __name__ == '__main__':
 	# Create directory to store plot images

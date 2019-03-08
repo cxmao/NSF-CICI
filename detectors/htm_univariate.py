@@ -143,7 +143,7 @@ def GetData(logs, field):
 				date_string = row[0][0:4] + "-" + row[0][4:6] + "-" + row[0][6:8] + " " + row[1]
 				# Cast to a datetime object
 				timestamp_value = datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S")
-				if(str.isdigit(row[field])):
+				if(str.isdigit(row[field]) or float(row[field])):
 					# Cast to float type
 					field_value = float(row[field])
 					# Write to record dictionary
@@ -223,12 +223,14 @@ if __name__ == "__main__":
 			RunModel(modelParams, modelInput, fieldName)
 	else:
 		header = GetHeader(_DATA_PATH)
+		print header
 		for i in range(2, len(header)):
 			# Check if results exist, then skip
-			if (os.path.isfile(_OUTPUT_PATH + header[i] + _CSV_NAME)):
+			if (not os.path.isfile(_OUTPUT_PATH + header[i] + _CSV_NAME)):
 				modelInput = GetData(_DATA_PATH, i)
 				if (modelInput[1] != []):#Input data is not empty
 					fieldName = GetFieldName(modelInput[0], i)
+					print fieldName
 					modelParams = SetModelParams(fieldName + ".py", fieldName)
 					print ("Running Model for " + header[i])
 					RunModel(modelParams, modelInput, fieldName)
