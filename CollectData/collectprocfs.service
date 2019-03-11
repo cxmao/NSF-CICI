@@ -1,0 +1,14 @@
+# Author: Christina Mao 
+# Date Created: 03-11-2019 
+# Description: Unit file to run python scripts as a systemd service 
+# Python script file needs permission 644
+
+
+[Unit]
+Description = Run python scripts to scrape /proc data 
+
+[Service]
+ExecStart = /usr/bin/python /home/cmao/Repos/nsf-cici/CollectData/interrupts.py 
+StandardOutput = syslog 
+StandardError = syslog 
+SyslogIdentifier = collectprocfs
