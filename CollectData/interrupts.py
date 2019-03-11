@@ -13,8 +13,9 @@ from datetime import datetime
 from datetime import date
 
 __PROC_PATH = "/proc/interrupts"
-__FILE_NAME = str(date.today()) + "_interrupts.csv"
-__OUTPUT_PATH = "/home/cmao/Repos/nsf-cici/data/procfs/interrupts"
+__DATE = date.today()
+__FILE_NAME = str(__DATE) + "_interrupts.csv"
+__OUTPUT_PATH = "/home/cmao/Repos/nsf-cici/data/procfs/interrupts/"
 
 def signal_handler(signal, frame):
 	print("\n Program exiting..")
@@ -22,22 +23,25 @@ def signal_handler(signal, frame):
 
 def main(): 
 	"""
-	Description:  Takes /proc/interrupts and writes/appends to a file labeled with today's date
-	Parameters: 
+	Description:  Takes /proc/interrupts and writes/appends to a file for one day. 
 	Returns:
 	"""
 	# Handle graceful shutdown from CTRL-C or Kill 
 	signal.signal(signal.SIGINT, signal_handler)
 
-	# Check if output path exists 
-	if not os.path.exists(__OUTPUT_PATH):
-		os.mkdir(__OUTPUT_PATH)
-	os.chdir(__OUTPUT_PATH)		
+	# Check if output directory exists 
+	if(not os.path.exists( __OUTPUT_PATH )):
+		os.makedirs( __OUTPUT_PATH )
+	os.chdir( __OUTPUT_PATH )		
+	# Create log file 
 	writeFile = open(__FILE_NAME, "a")
-	while True :
-		time.sleep(1)
+	while True:
+		# Check and update date to rollover logs
+		if( date.today() != __DATE ):
+			DATE = date.today()
+			FILE_NAME = str(DATE) + "_interrupts.csv" 
 		# Read Proc Filesystem File 
-		with open(__PROC_PATH) as file: 
+		with open( __PROC_PATH ) as file: 
 			# Get timestamp 
 			ts = datetime.now()
 			ts = ts.strftime("%Y-%m-%d %H:%M:%S")
@@ -50,7 +54,7 @@ def main():
 		# Wait for 1s
 		time.sleep(1)
 	file.close()
-	print ("Results written to " + __OUTPUT_PATH)
+	print ( "Results written to " + __OUTPUT_PATH )
 
 	return 
 
