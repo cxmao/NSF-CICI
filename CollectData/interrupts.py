@@ -35,6 +35,7 @@ def main():
 	os.chdir(__OUTPUT_PATH)		
 	writeFile = open(__FILE_NAME, "a")
 	while True :
+		time.sleep(1)
 		# Read Proc Filesystem File 
 		with open(__PROC_PATH) as file: 
 			# Get timestamp 
@@ -48,9 +49,9 @@ def main():
 				writer.writerow(formattedLine)
 		# Wait for 1s
 		time.sleep(1)
-
-	print ("Results written to " + __OUTPUT_PATH)
 	file.close()
+	print ("Results written to " + __OUTPUT_PATH)
+
 	return 
 
 
