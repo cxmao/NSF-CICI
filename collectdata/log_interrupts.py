@@ -9,12 +9,12 @@ import os
 import time 
 import csv
 import sys, signal # Handle CTRL-C
-from datetime import datetime
-from datetime import date
+#from datetime import datetime
+#from datetime import date 
+import datetime
 
 __PROC_PATH = "/proc/interrupts"
-__DATE = date.today()
-__FILE_NAME = str(__DATE) + "_interrupts.csv"
+__FILE_NAME = str(datetime.date.today()) + "_interrupts.csv"
 __OUTPUT_PATH = "/home/cmao/Repos/nsf-cici/data/procfs/interrupts/"
 
 def signal_handler(signal, frame):
@@ -35,15 +35,16 @@ def main():
 	os.chdir( __OUTPUT_PATH )		
 	# Create log file 
 	writeFile = open(__FILE_NAME, "a")
+	log_date = datetime.date.today()
 	while True:
-		# Check and update date to rollover logs
-		if( date.today() != __DATE ):
-			DATE = date.today()
-			FILE_NAME = str(DATE) + "_interrupts.csv" 
+		# Check date and create new log file for new date
+		if(datetime.date.today() != log_date):
+			log_date = date.today()
+			FILE_NAME = str(log_date) + "_interrupts.csv" 
 		# Read Proc Filesystem File 
 		with open( __PROC_PATH ) as file: 
 			# Get timestamp 
-			ts = datetime.now()
+			ts = datetime.datetime.now()
 			ts = ts.strftime("%Y-%m-%d %H:%M:%S")
 			writer = csv.writer(writeFile)
 			# Format as a time-stamped csv file 
@@ -56,7 +57,7 @@ def main():
 	file.close()
 	print ( "Results written to " + __OUTPUT_PATH )
 
-	return 
+	return 0
 
 
 if __name__ == "__main__":
