@@ -1,14 +1,20 @@
 # Author: Christina Mao 
 # Date Created: 03-11-2019 
-# Description: Unit file to run python scripts as a systemd service 
-# Python script file needs permission 644
+# Description: Unit file to run a python script as a systemd service 
+# To use:
+#	* Copy this file to /lib/systemd/system 
+# 	* Change permission of this file to 644 
+# 	* systemctl daemon-reload
+# 	* systemctl enable <this file> 
+# 	* reboot
+# 	* systemctl start <this file> 
 
 
 [Unit]
 Description = Run python scripts to scrape /proc data 
 
 [Service]
-ExecStart = /usr/bin/python /home/cmao/Repos/nsf-cici/CollectData/interrupts.py 
+ExecStart = /usr/bin/python /home/cmao/Repos/nsf-cici/collectdata/log_interrupts.py 
 StandardOutput = syslog 
 StandardError = syslog 
 SyslogIdentifier = collectprocfs
