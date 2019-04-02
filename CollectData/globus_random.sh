@@ -9,8 +9,8 @@
 #=================================================================================================
 
 #GLOBUS PARAMETERS
-DTNS=("//cern-dtn.es.net" "//newy-dtn.es.net" "//star-dtn.est.net" "//sunn-dtn.es.net") 
-DATASETS=("/data1/500G.dat" "/data1/100G.dat" "/data1/500M.dat" "/data1/100M")
+DTNS=("//cern-dtn.es.net" "//newy-dtn.es.net" "//star-dtn.es.net" "//sunn-dtn.es.net") 
+DATASETS=("/data1/500G.dat" "/data1/100G.dat" "/data1/50G.dat" "/data1/10G.dat" "/data1/1G.dat"  "/data1/100M.dat")
 CLIMATEDATA=("/data1/Climate-Huge" "/data1/Climate-Large" "/data1/Climate-Medium" "/data1/Climate-Small") 
 
 DEST="/home/cmao/share/"
