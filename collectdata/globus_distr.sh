@@ -5,17 +5,20 @@
 # DESCRIPTION:Run Globus transfers randomly according to a distribution
 # Each interval, a small, medium, or large file is transferred 
 # Guide to run ESnet DTN: https://fasterdata.es.net/performance-testing/DTNs/
-# To-do: Not working for star, sunn dtns
-# To-do: Sleep randomly in a 1 hour interval
+# To-do: Not working for star, newy dtns
+# To-do: Decide which files (only climate vs only GB.dat files vs mix)
+# To-do: remove files after writing
 #=================================================================================================
 
 #GLOBUS PARAMETERS
-DTNS=("//cern-dtn.es.net" "//newy-dtn.es.net" "//star-dtn.es.net" "//sunn-dtn.es.net")
+DTNS=("//cern-dtn.es.net" "//sunn-dtn.es.net")
 DATASETS=("/data1/500G.dat" "/data1/100G.dat" "/data1/50G.dat" "/data1/10G.dat" "/data1/1G.dat"  "/data1/100M.dat")
 CLIMATEDATA=("/data1/Climate-Huge" "/data1/Climate-Large" "/data1/Climate-Medium" "/data1/Climate-Small")
-SMALLDATA=("//data1/100M.dat" "//data1/1G.dat" "//data1/Climate-Small")
-MEDIUMDATA=("//data1/Climate-Medium" "//data1/10G.dat")
-LARGEDATA=("//data1/Climate-Large" "//data1/100G.dat" "//data1/500G.dat")
+SMALLDATA=("/data1/5GB-in-small-files/" "//data1/100M.dat" "//data1/1G.dat" "//data1/Climate-Small/")
+MEDIUMDATA=("//data1/Climate-Medium/" "//data1/10G.dat")
+LARGEDATA=("//data1/Climate-Large/" "//data1/100G.dat" "//data1/500G.dat")
+
+#Climate data on one day, otherwise use normal data files
 
 #PERCENTAGE RANGE TO SELECT FILE 1-100
 #if medium percentage is 60, and small is 30, 30-60 will trigger medium transfer
@@ -47,15 +50,15 @@ INTERVAL=3600
         if [ $rand_file -lt $SMALL_PERCENT ]
         then
                 echo "small"
-                globus-url-copy -vb -fast -tcp-bs 64M -bs 1M -p $FLOWS -stripe ftp:${DTNS[i]}:2811${SMALLDATA[s]} file:$DEST
+                globus-url-copy -r -vb -fast -tcp-bs 64M -bs 1M -p $FLOWS -stripe ftp:${DTNS[i]}:2811${SMALLDATA[s]} file:$DEST
         elif [[ $rand_file -ge $SMALL_PERCENT ]] && [[ $rand_file -lt $MEDIUM_PERCENT ]]
         then
                 echo "medium"
-                globus-url-copy -vb -fast -tcp-bs 64M -bs 1M -p $FLOWS -stripe ftp:${DTNS[i]}:2811${MEDIUMDATA[m]} file:$DEST
+                globus-url-copy -r -vb -fast -tcp-bs 64M -bs 1M -p $FLOWS -stripe ftp:${DTNS[i]}:2811${MEDIUMDATA[m]} file:$DEST
         elif [ $rand_file -ge $MEDIUM_PERCENT ] && [[ $rand_file -lt $LARGE_PERCENT ]]
         then
                 echo "large"
-                globus-url-copy -vb -fast -tcp-bs 64M -bs 1M -p $FLOWS -stripe ftp:${DTNS[i]}:2811${LARGEDATA[l]} file:$DEST
+                globus-url-copy -r -vb -fast -tcp-bs 64M -bs 1M -p $FLOWS -stripe ftp:${DTNS[i]}:2811${LARGEDATA[l]} file:$DEST
         fi
 
                 #globus-url-copy -vb -fast -tcp-bs 64M -bs 1M -p $FLOWS -stripe ftp:${DTNS[i]}:2811${DATASETS[y]} file:$DEST
