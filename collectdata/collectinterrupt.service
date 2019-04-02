@@ -11,10 +11,13 @@
 
 
 [Unit]
-Description = Run python scripts to scrape /proc data 
+Description = Run log_interrupt.py to scrape /proc/interrupt data 
 
 [Service]
-ExecStart = /usr/bin/python /home/cmao/Repos/nsf-cici/collectdata/log_interrupts.py 
+#Run single execstart
+Type = simple
+ExecStart = /usr/bin/python /home/cmao/Repos/nsf-cici/collectdata/log_interrupt.py 
+Restart = on-failure
 StandardOutput = syslog 
 StandardError = syslog 
-SyslogIdentifier = collectprocfs
+SyslogIdentifier = collectinterrupt

@@ -1,7 +1,7 @@
 """
 Author: Christina Mao 
-Date Created: 04-02-2019 
-Description: Read /proc/ file system  and parses to a time-stamped csv file
+Date Created: 03-06-2019 
+Description: Reads /proc/interrupts and logs to a time-stamped csv file
 http://nupic.docs.numenta.org/1.0.3/quick-start/example-data.html 
 
 """
@@ -9,38 +9,33 @@ import os
 import time 
 import csv
 import sys, signal # Handle CTRL-C
+#from datetime import datetime
+#from datetime import date 
 import datetime
 
-__PROC_PATH = "/proc/stat"
+__PROCPATH = "/proc/stat"
 __FILE_NAME = str(datetime.date.today()) + "_stat.csv"
-__OUTPUT_PATH = "/home/cmao/Repos/nsf-cici/data/procfs/stat/"
+__OUTPATH = "/home/cmao/Repos/nsf-cici/data/procfs/stat/"
 
 def signal_handler(signal, frame):
 	print("\n Program exiting..")
 	sys.exit(0)
 
-def main(): 
-	"""
-	Description:  Takes /proc/interrupts and writes/appends to a file for one day. 
-	Returns:
-	"""
-	# Handle graceful shutdown from CTRL-C or Kill 
-	signal.signal(signal.SIGINT, signal_handler)
-
+def log_data(procpath, filename, outpath):
 	# Check if output directory exists 
-	if(not os.path.exists( __OUTPUT_PATH )):
-		os.makedirs( __OUTPUT_PATH )
-	os.chdir( __OUTPUT_PATH )		
+	if(not os.path.exists(outpath)):
+		os.makedirs(outpath)
+	os.chdir(outpath)		
 	# Create log file 
-	writeFile = open(__FILE_NAME, "a")
+	writeFile = open( filename, "a")
 	log_date = datetime.date.today()
 	while True:
 		# Check date and create new log file for new date
 		if(datetime.date.today() != log_date):
 			log_date = date.today()
-			FILE_NAME = str(log_date) + "_interrupts.csv" 
+			filename = str(log_date) + "_interrupts.csv" 
 		# Read Proc Filesystem File 
-		with open( __PROC_PATH ) as file: 
+		with open( procpath ) as file: 
 			# Get timestamp 
 			ts = datetime.datetime.now()
 			ts = ts.strftime("%Y-%m-%d %H:%M:%S")
@@ -53,7 +48,18 @@ def main():
 		# Wait for 1s
 		time.sleep(1)
 	file.close()
-	print ( "Results written to " + __OUTPUT_PATH )
+	print ( "Results written to " + outpath )
+
+
+def main(): 
+	"""
+	Description:  Takes /proc/interrupts and writes/appends to a file for one day. 
+	Returns:
+	"""
+	# Handle graceful shutdown from CTRL-C or Kill 
+	signal.signal(signal.SIGINT, signal_handler)
+
+	log_data(__PROCPATH, __FILE_NAME, __OUTPATH)
 
 	return 0
 
