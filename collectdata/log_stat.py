@@ -33,7 +33,7 @@ def log_data(procpath, filename, outpath):
 		# Check date and create new log file for new date
 		if(datetime.date.today() != log_date):
 			log_date = date.today()
-			filename = str(log_date) + "_interrupts.csv" 
+			filename = str(log_date) + "_stat.csv" 
 		# Read Proc Filesystem File 
 		with open( procpath ) as file: 
 			# Get timestamp 
@@ -47,7 +47,7 @@ def log_data(procpath, filename, outpath):
 				writer.writerow(formattedLine)
 		# Wait for 1s
 		time.sleep(1)
-	file.close()
+	writeFile.close()
 	print ( "Results written to " + outpath )
 
 
