@@ -11,7 +11,7 @@
 
 
 [Unit]
-Description = Run log_stat.py to scrape /proc/stat data 
+Description = Run log_stat.py to log /proc/stat data 
 
 
 [Service]

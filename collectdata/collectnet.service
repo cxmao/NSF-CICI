@@ -1,5 +1,5 @@
 # Author: Christina Mao 
-# Date Created: 03-11-2019 
+# Date Created: 04-02-2019 
 # Description: Unit file to run a python script as a systemd service 
 # To use:
 #	* Copy this file to /lib/systemd/system 
@@ -11,13 +11,14 @@
 
 
 [Unit]
-Description = Run log_interrupt.py to log /proc/interrupt data 
+Description = Run log_stat.py to log /proc/net/dev data 
+
 
 [Service]
 #Run single execstart
-Type = simple
-ExecStart = /usr/bin/python /home/cmao/Repos/nsf-cici/collectdata/log_interrupt.py 
+Type = simple 
+ExecStart = /usr/bin/python /home/cmao/Repos/nsf-cici/collectdata/log_net.py 
 Restart = on-failure
 StandardOutput = syslog 
 StandardError = syslog 
-SyslogIdentifier = collectinterrupt
+SyslogIdentifier = collectstat
