@@ -26,9 +26,9 @@ def signal_handler(signal, frame):
 
 def is_data(inputstring):
 	"""
-	Description: Checks if string is not a header line. 
+	Description: Checks if string is not a header line.
         Checks if string contains digits.
-		@inputstringr <string> - string to check 
+		@inputstringr <string> - string to check
 	Returns:
 		<bool>
 	"""
@@ -37,7 +37,7 @@ def is_data(inputstring):
 
 def log_data(procpath, filename, outpath):
 	"""
-	Description:  Takes /proc/interrupts and writes/appends to a file for one day. 
+	Description:  Takes /proc/interrupts and writes/appends to a file for one day.
 	Returns:
 	"""
 	# Check if output directory exists
@@ -79,4 +79,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-    

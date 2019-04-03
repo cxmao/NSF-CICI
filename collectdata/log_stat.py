@@ -1,8 +1,8 @@
 """
-Author: Christina Mao 
-Date Created: 03-06-2019 
+Author: Christina Mao
+Date Created: 03-06-2019
 Description: Reads /proc/interrupts and logs to a time-stamped csv file
-http://nupic.docs.numenta.org/1.0.3/quick-start/example-data.html 
+http://nupic.docs.numenta.org/1.0.3/quick-start/example-data.html
 
 """
 from datetime import datetime
@@ -68,4 +68,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-	

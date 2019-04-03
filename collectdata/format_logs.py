@@ -1,13 +1,14 @@
-# Author: Christina Mao 
-# Date Created: 04-02-2019 
-# Description:Process input data from /proc filesystem to feed into NuPic Framework  (See: http://nupic.docs.numenta.org/1.0.0/quick-start/example-data.html)
+# Author: Christina Mao
+# Date Created: 04-02-2019
+# Description:Process input data from /proc filesystem to feed into NuPic Framework
+# See: http://nupic.docs.numenta.org/1.0.0/quick-start/example-data.html
 from __future__ import division
-import argparse 
-import os 
+from datetime import datetime
+import argparse
+import os
 import re
 import csv
-from datetime import datetime
-import collections #To sort dictionaries
+import collections  # To sort dictionaries
 
 
 #Set filedate
@@ -18,15 +19,14 @@ STAT = "/home/cmao/Repos/nsf-cici/data/procfs/stat/"
 NET = "/home/cmao/Repos/nsf-cici/data/procfs/net/"
 
 
-
 def GetInterrupts(filename):
 	"""
-	Description: Get Interrupts from /proc/stat and return a dictionary with date timestamps as key
-	Parameters: 
-		filename <string>: 
+	Description: Get Interrupts from /proc/stat and
+				return a dictionary with timestamps as key
+	Parameters:
+		filename <string>:  /procfs log filename
 	Return:
 		interruptsDict <dict>: timestamp, #interrupts since boot
-
 	"""
 	file = open(STAT + filename, "r")
 	interruptsDict={}
@@ -34,56 +34,58 @@ def GetInterrupts(filename):
 		if (re.search("intr", line)):
 			elements = line.split(",")
 			interruptsDict[elements[0]] = int(elements[2])
-	#print interruptsDict
 	return interruptsDict
 
 
 def GetContext(filename):
 	"""
-	Description: Get Context Switches from /proc/stat and return a dictionary with date timestamp as key
+	Description: Get Context Switches from /proc/stat
+				and return a dictionary with date timestamp as key
 	Parameters:
 		filename <string>
 	Return:
-		contextDict <string> - timestamp, #context switches since boot 
+		contextDict <string> - timestamp, #total context switches since boot
 	"""
 	file = open(STAT + filename, "r")
 	contextDict={}
-	for line in file: 
+	for line in file:
 		if (re.search("ctxt", line)):
 			elements = line.split(",")
-			contextDict[elements[0]] = int(elements[2]) #.strip("\r\n")
-	#print  contextDict
+			contextDict[elements[0]] = int(elements[2])  #.strip("\r\n")
 	return contextDict
 
 
 def GetBytes(filename):
 	"""
-	Description: Get total Packets & Bytes TXed/RXed from /proc/net/dev and return as a dictionary with list as values
+	Description: Get total Packets & Bytes TXed/RXed from /proc/net/dev
+				and return as a dictionary with list as values
 	Parameters:
 		filename <string>
 	Return:
-		netDict <dictionary> : <key> timestamp, <list> total Bytes Rxed, total Bytes Txed, total Packets Rxed, total Packets Txed
+		netDict <dictionary> : <key> timestamp,
+								<list> total Bytes Rxed,
+									total Bytes Txed,
+									total Packets Rxed,
+									total Packets Txed
 	"""
 	file = open(NET + filename, "r")
-	bytesDict={}
-	RxBytes = TxBytes= RxPkts = TxPkts = 0
+	bytesDict = {}
+	RxBytes = TxBytes = RxPkts = TxPkts = 0
 
 	for line in file:
-	#	print line
 		elements = line.split(",")
-		#Reset counter on loopback 
+		# Reset counter on loopback
 		if(elements[1] == 'lo:'):
-			#Write previously stored values
-			if( bool(bytesDict) and elements[1] != tstamp):
-				bytesDict[tstamp] = [RxBytes,TxBytes, RxPkts, TxPkts]
-			#Get new timestamp  and reset counters
-			#tstamp =  datetime.strptime(elements[0], '%Y-%m-%d %H:%M:%S')
+			# Write previously stored values
+			if(bool(bytesDict) and elements[1] != tstamp):
+				bytesDict[tstamp] = [RxBytes, TxBytes, RxPkts, TxPkts]
+			# Get new timestamp  and reset counters
 			tstamp = elements[0]
-			RxBytes =  int(elements[2])
+			RxBytes = int(elements[2])
 			TxBytes = int(elements[10])
 			RxPkts = int(elements[3])
 			TxPkts = int(elements[11])
-			bytesDict[tstamp] = ''
+			bytesDict[tstamp] = ''  #Hacky
 		else:
 			RxBytes += int(elements[2])
 			TxBytes += int(elements[10])
@@ -92,10 +94,27 @@ def GetBytes(filename):
 	return bytesDict
 
 
+def GetMetrics(numdict, denomdict, csvwriter):
+	row = []
+	for key in numdict:
+		try:
+			if key in denomdict:
+				row.extend((key, numdict[key]))  # Append sequence
+				for v in range(0, len(denomdict[key])):
+					temp = float(numdict[key]/denomdict[key][v])
+					row.append('%.5f' % temp)
+				csvwriter.writerow(row)
+				del row[:]  # Clear list
+		except IndexError:
+			pass
+
+
 def main(): 
-	parser = argparse.ArgumentParser(description ='Provide dates of logs: startdate enddate metric')
+	"""
+	parser = argparse.ArgumentParser(description='Provide dates of logs: startdate enddate metric')
 	parser.parse_args()
- 
+ 	"""
+
 	# Get Dictionaries
 	interrupts = GetInterrupts(FILEDATE + "_stat.csv")
 	context = GetContext(FILEDATE + "_stat.csv")
@@ -108,17 +127,44 @@ def main():
 	netDict = collections.OrderedDict(sorted(net.items()))
 
 
-	# Write results to csv file in nupic input format 
+	# Prepare csv writers to output in NuPic input format 
 	# See: http://nupic.docs.numenta.org/1.0.0/quick-start/example-data.html)
-	interruptOutput = open('../data/int_out.csv', 'wb') 
-	interruptWriter = csv.writer(interruptOutput, delimiter = ',') 
-	contextOutput = open('../data/cont_out.csv', 'wb') 
-	contextWriter = csv.writer(contextOutput, delimiter = ',') 
-	#TO-DO: Write header and datatype 
-	#interruptWriter.writerow()
+	interruptOutput = open('../data/int_out.csv', 'wb')
+	interruptWriter = csv.writer(interruptOutput, delimiter=',')
+	contextOutput = open('../data/cont_out.csv', 'wb')
+	contextWriter = csv.writer(contextOutput, delimiter=',')
+	intHeader = [
+					"Timestamp",
+					"Total Interrupts",
+					"IBR",
+					"IBT",
+					"IPR",
+					"IPT"
+				]
+	fieldTypes = [
+				"datetime",
+				"int",
+				"float",
+				"float",
+				"float",
+				"float",
+				]
+	flags = ["T", "C", "C", "C", "C", "C"]
+	interruptWriter.writerow(intHeader)
+	interruptWriter.writerow(fieldTypes)
+	interruptWriter.writerow(flags)
 
-
-		# Convert time to datetime type
+	contheader = [
+					"Timestamp",
+					"Total Interrupts",
+					"CBR",
+					"CBT",
+					"CPR",
+					"CPT"
+				]
+	contextWriter.writerow(contheader)
+	contextWriter.writerow(fieldTypes)
+	contextWriter.writerow(flags)
 
 	"""
 	 Process dictionaries to get metrics:
@@ -131,38 +177,8 @@ def main():
 		CPT =  Context Switch/Packets Transferred
 		CPR = Context Switch/Packets Received
 	"""
-	for key in intDict:
-		try:
-			if key in netDict:
-				IBR = float(intDict[key]/netDict[key][0])
-				IBT = float(intDict[key]/netDict[key][1])
-				IPT = float(intDict[key]/netDict[key][2])
-				IPR = float(intDict[key]/netDict[key][3])
-
-				print key, intDict[key], netDict[key], "\n"
-				print '%.5f' % IBR, '%.5f' %IBT, '%.5f' % IPT, '%.5f' % IPR
-				row = key 
-				"""
-						+ '%.5f' % IBR + ","
-						+ '%.5f' % IBT + ","
-						+ '%.5f' % IPT + "," 
-						+ '%.5f' % IPR
-				"""
-				interruptWriter.writerow(row)
-		except IndexError: 
-			pass
-
-	#To-Do: Context Switch 
-	for key in contDict:
-		try: 
-			if key in netDict: 
-				CBR = float(contDict[key]/netDict[key][0])
-				CBT = float(contDict[key]/netDict[key][1])
-				CPT = float(contDict[key]/netDict[key][2])
-				CPR = float(contDict[key]/netDict[key][3])
-		except IndexError:
-			pass
-
+	GetMetrics(intDict, netDict, interruptWriter)
+	GetMetrics(contDict, netDict, contextWriter)
 
 if __name__ == '__main__':
 	main()

@@ -1,16 +1,15 @@
 """
-Author: Christina Mao 
-Date Created: 03-06-2019 
+Author: Christina Mao
+Date Created: 03-06-2019
 Description: Reads /proc/interrupts and logs to a time-stamped csv file
 http://nupic.docs.numenta.org/1.0.3/quick-start/example-data.html 
-
 """
 from datetime import datetime
 from datetime import date
 import os
 import time
 import csv
-import sys, signal# Handle CTRL-C
+import sys, signal  # Handle CTRL-C
 
 
 __PROCPATH = "/proc/interrupts"
@@ -24,7 +23,7 @@ def signal_handler(signal, frame):
 
 
 def log_data(procpath, filename, outpath):
-	# Check if output directory exists 
+	# Check if output directory exists
 	if(not os.path.exists(outpath)):
 		os.makedirs(outpath)
 	os.chdir(outpath)
@@ -55,10 +54,10 @@ def log_data(procpath, filename, outpath):
 
 def main():
 	"""
-	Description:  Takes /proc/interrupts and writes/appends to a file for one day. 
+	Description:  Takes /proc/interrupts and writes/appends to a file for one day.
 	Returns:
 	"""
-	# Handle graceful shutdown from CTRL-C or Kill 
+	# Handle graceful shutdown from CTRL-C or Kill
 	signal.signal(signal.SIGINT, signal_handler)
 
 	log_data(__PROCPATH, __FILE_NAME, __OUTPATH)
@@ -68,4 +67,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-	
