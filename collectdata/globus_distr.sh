@@ -44,7 +44,7 @@ INTERVAL=3600
 while true; do
         curr_time=$(date +"%H")
         rand_file=$(($RANDOM % 100 + 1))
-        interval=$(($RANDOM % 3540 + 60))
+        interval=$(($RANDOM % 540 + 60))
         echo $interval "seconds until next transfer"
         sleep $interval
 
