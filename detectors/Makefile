@@ -1,5 +1,5 @@
 
-.PHONY:  clean-pyc clean-buildi run
+.PHONY:  clean-pyc clean-build run
 
 TEST_PATH=./
 
@@ -11,12 +11,8 @@ help:
 	@echo " 	Remove plots" 
 	@echo "	clean-build"
 	@echo "		Remove build artifacts"
-	@echo "	lint"
-	@echo " 	Check style with flake8"
-	@echo "	test"
-	@echo "		Testing with"
 	@echo "	run"
-	@echo "		Run htm_cpu.py" 
+	@echo "		Run htm_univariate.py" 
 clean-pyc: 
 	find . -name '*.pyc' -exec rm --force {} + 
 

@@ -6,7 +6,7 @@ http://nupic.docs.numenta.org/1.0.3/quick-start/example-data.html
 
 """
 import os
-import time 
+import time
 import csv
 import re
 import sys, signal # Handle CTRL-C
@@ -40,29 +40,29 @@ def log_data(procpath, filename, outpath):
 	# Check if output directory exists
 	if(not os.path.exists(outpath)):
 		os.makedirs(outpath)
-	os.chdir(outpath)		
-	# Create log file 
-	writeFile = open( filename, "a")
+	os.chdir(outpath)
+	# Create log file
+	writeFile = open(filename, "a")
 	log_date = datetime.date.today()
-#	while True:
-	# Check date and create new log file for new date
-	if(datetime.date.today() != log_date):
-		log_date = datetime.today()
-		filename = str(log_date) + "_net.csv" 
-	# Read Proc Filesystem File 
-	with open( procpath ) as file: 
-		# Get timestamp 
-		ts = datetime.datetime.now()
-		ts = ts.strftime("%Y-%m-%d %H:%M:%S")
-		writer = csv.writer(writeFile)
-		# Format as a time-stamped csv file 
-		for line in file:
-			if(is_data(line)):
-				formattedLine = line.split()
-				formattedLine.insert(0,str(ts))
-				writer.writerow(formattedLine)
-	# Wait for 1s
-	time.sleep(1)
+	while True:
+		# Check date and create new log file for new date
+		if(datetime.date.today() != log_date):
+			log_date = datetime.today()
+			filename = str(log_date) + "_net.csv"
+		# Read Proc Filesystem File 
+		with open(procpath) as file:
+			# Get timestamp 
+			ts = datetime.datetime.now()
+			ts = ts.strftime("%Y-%m-%d %H:%M:%S")
+			writer = csv.writer(writeFile)
+			# Format as a time-stamped csv file
+			for line in file:
+				if(is_data(line)):
+					formattedLine = line.split()
+					formattedLine.insert(0, str(ts))
+					writer.writerow(formattedLine)
+		# Wait for 1s
+		time.sleep(1)
 	writeFile.close()
 	print ( "Results written to " + outpath )
 

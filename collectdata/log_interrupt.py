@@ -32,7 +32,7 @@ def log_data(procpath, filename, outpath):
 	while True:
 		# Check date and create new log file for new date
 		if(datetime.date.today() != log_date):
-			log_date = datetime.today()
+			log_date = datetim.today()
 			filename = str(log_date) + "_interrupts.csv" 
 		# Read Proc Filesystem File 
 		with open( procpath ) as file: 
