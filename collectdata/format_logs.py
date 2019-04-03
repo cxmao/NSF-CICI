@@ -2,6 +2,8 @@
 # Date Created: 04-02-2019
 # Description:Process input data from /proc filesystem to feed into NuPic Framework
 # See: http://nupic.docs.numenta.org/1.0.0/quick-start/example-data.html
+# TO-DO: Add argument Parsing
+#---------------------------------------------------------------------------------
 from __future__ import division
 from datetime import datetime
 import argparse
@@ -15,8 +17,9 @@ import collections  # To sort dictionaries
 FILEDATE = "2019-04-02"
 
 #Set ProcFS data log directory paths
-STAT = "/home/cmao/Repos/nsf-cici/data/procfs/stat/"
-NET = "/home/cmao/Repos/nsf-cici/data/procfs/net/"
+STATDIR = "/home/cmao/Repos/nsf-cici/data/procfs/stat/"
+NETDIR = "/home/cmao/Repos/nsf-cici/data/procfs/net/"
+OUTDIR = "/home/cmao/Repos/nsf-cici/data/clean/procfs/"
 
 
 def GetInterrupts(filename):
@@ -28,7 +31,7 @@ def GetInterrupts(filename):
 	Return:
 		interruptsDict <dict>: timestamp, #interrupts since boot
 	"""
-	file = open(STAT + filename, "r")
+	file = open(STATDIR + filename, "r")
 	interruptsDict={}
 	for line in file: 
 		if (re.search("intr", line)):
@@ -46,7 +49,7 @@ def GetContext(filename):
 	Return:
 		contextDict <string> - timestamp, #total context switches since boot
 	"""
-	file = open(STAT + filename, "r")
+	file = open(STATDIR + filename, "r")
 	contextDict={}
 	for line in file:
 		if (re.search("ctxt", line)):
@@ -68,7 +71,7 @@ def GetBytes(filename):
 									total Packets Rxed,
 									total Packets Txed
 	"""
-	file = open(NET + filename, "r")
+	file = open(NETDIR + filename, "r")
 	bytesDict = {}
 	RxBytes = TxBytes = RxPkts = TxPkts = 0
 
@@ -109,11 +112,33 @@ def GetMetrics(numdict, denomdict, csvwriter):
 			pass
 
 
+def DirExists(dirpath):
+	if(not os.path.exists(dirpath)):
+		os.makedirs(dirpath)
+
+
+def FileExists(filepath):
+	exists = os.path.isfile(filepath)
+	if exists:
+		#Extract date
+		FILEDATE = re.search(r'\d{4}-\d{2}-\d{2}', filepath)
+		print(FILEDATE)
+
+
 def main(): 
+	
 	"""
+	# Argument parsing from command-line
 	parser = argparse.ArgumentParser(description='Provide dates of logs: startdate enddate metric')
-	parser.parse_args()
+	parser.add_argument('Filedate', metavar='F', type=argeparse.FileType('r'), help='Date of file as specified in /data/proc/')
+	parser.add_argument('Outputdirectory', metavar='O', type=string, help='Absolute directory path to store logs')
+	args = parser.parse_args()
  	"""
+ 
+	# Check file directory paths exist 
+	DirExists(OUTDIR)
+	#FileExists(STATDIR + FILEDATE + "_stat.csv")
+	#FileExists(NETDIR + FILEDATE + "_net.csv")
 
 	# Get Dictionaries
 	interrupts = GetInterrupts(FILEDATE + "_stat.csv")
@@ -126,12 +151,23 @@ def main():
 	contDict = collections.OrderedDict(sorted(context.items()))
 	netDict = collections.OrderedDict(sorted(net.items()))
 
+	"""
+	 Process dictionaries to get metrics:
+		IBR = Interrupts/Bytes Received
+		IBT = Interrupts/Bytes Transferred
+		IPR = Interrupts/Packets Received
+		IPR = Interrupts/Packets Transferred
+		CBT = Context Switch/Bytes Transferred
+		CBR = Context Switch/Bytes Received
+		CPT =  Context Switch/Packets Transferred
+		CPR = Context Switch/Packets Received
+	"""
 
 	# Prepare csv writers to output in NuPic input format 
 	# See: http://nupic.docs.numenta.org/1.0.0/quick-start/example-data.html)
-	interruptOutput = open('../data/int_out.csv', 'wb')
+	interruptOutput = open(OUTDIR + FILEDATE + '_interrupts_nupic.csv', 'wb')
 	interruptWriter = csv.writer(interruptOutput, delimiter=',')
-	contextOutput = open('../data/cont_out.csv', 'wb')
+	contextOutput = open(OUTDIR + FILEDATE + '_context_nupic.csv', 'wb')
 	contextWriter = csv.writer(contextOutput, delimiter=',')
 	intHeader = [
 					"Timestamp",
@@ -156,7 +192,7 @@ def main():
 
 	contheader = [
 					"Timestamp",
-					"Total Interrupts",
+					"Total Context Switches", 
 					"CBR",
 					"CBT",
 					"CPR",
@@ -166,17 +202,7 @@ def main():
 	contextWriter.writerow(fieldTypes)
 	contextWriter.writerow(flags)
 
-	"""
-	 Process dictionaries to get metrics:
-		IBR = Interrupts/Bytes Received
-		IBT = Interrupts/Bytes Transferred
-		IPR = Interrupts/Packets Received
-		IPR = Interrupts/Packets Transferred
-		CBT = Context Switch/Bytes Transferred
-		CBR = Context Switch/Bytes Received
-		CPT =  Context Switch/Packets Transferred
-		CPR = Context Switch/Packets Received
-	"""
+	#Get Metrics
 	GetMetrics(intDict, netDict, interruptWriter)
 	GetMetrics(contDict, netDict, contextWriter)
 

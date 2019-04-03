@@ -1,15 +1,11 @@
 """ 
 Author: Christina Mao 
-Date Created: 14 February 2019
+Date Created: 03 March 2019
 Uses the Nupic Online Prediction Framework (OPF) API
 Source code: https://github.com/numenta/nupic/blob/master/examples/opf/clients/hotgym/anomaly/hotgym_anomaly.py
-Description: Creates and runs a HTM model for each field for a given Collectl Plot  file.
-Model parameters are given by base_model_params.py. Anomaly scores are written out to csv files in '/results'
+Description: Creates and runs a HTM model for each field in a /proc FS processed datafile (output from format_logs.py)
+Model parameters are specified base_model_params.py. Anomaly scores are written out to csv files in "/results/<date>/""
 
-To-do: Fix hard-coded file paths
-To-do: Multiple files - continuous stream  
-To-do: Multiencoder for all fields 
-To-do: Add function documentation
 """
 #-------------------------------------------------------------------------------------------------------
 import os
@@ -23,19 +19,19 @@ from string import Template
 import base_model_params as mp
 from nupic.frameworks.opf.model_factory import ModelFactory
 
-#--------------------------------------------------------------------------------------------------------
-# System variables
+
+# System Variables
 _LOGGER = logging.getLogger(__name__)
 _DIR = os.getcwd()
 _BASE_MODEL_PARAMS_PATH = _DIR + "/base_model_params.py"
 _CSV_NAME = "_anomaly_scores.csv"
 
-# Data Path
-_DATA_PATH = "/home/cmao/Repos/nsf-cici/data/collectl/kelewan-20190220.numa"
-_OUTPUT_PATH = _DIR + '/results/' + filter(str.isdigit, _DATA_PATH) + '/'
+# Set Data Paths
+_INPUT_DIR = "/home/cmao/Repos/nsf-cici/data/procfs/"
+_OUTPUT_DIR= _DIR + '/results/' + filter(str.isdigit, _DATA_PATH) + '/'
 
-# Model variables 
-_ALLFIELDS = True 
+# Set Model Variables 
+_ALLFIELDS = True
 # Select based on Collectl log headers
 #_FIELD_SELECTOR = [13, 25, 37, 49, 61, 73, 85, 97] #CPU Interrupts
 _FIELD_SELECTOR = [5, 9] #Disk Read/Writes
@@ -185,9 +181,10 @@ def RunModel(params, data, field):
 	model = CreateModel(params)
 	model.enableInference({"predictedField": field})#Use the field name, not the encoder name
 	
-	if not os.path.exists(_OUTPUT_PATH):
-		os.mkdir(_OUTPUT_PATH)
-	os.chdir(_OUTPUT_PATH)
+	# Check output directory exists
+	if not os.path.exists(_OUTPUT_DIR):
+		os.mkdir(_OUTPUT_DIR)
+	os.chdir(_OUTPUT_DIR)
 
 	csvWriter = csv.writer(open(field + _CSV_NAME, "wb"))
 	csvWriter.writerow(["timestamp", field, "anomaly_score"])
@@ -201,7 +198,7 @@ def RunModel(params, data, field):
 		# Append Anomaly Score and write out results to CSV file
 		anomalyScore = results[i].inferences['anomalyScore']
 		csvWriter.writerow([data[1][i]['timestamp'], data[1][i][field], anomalyScore]) 
-	print("Results written to " + _OUTPUT_PATH + field + _CSV_NAME)
+	print("Results written to " + _OUTPUT_DIR + field + _CSV_NAME)
 
 	# Online Results
 	'''
@@ -217,17 +214,17 @@ def RunModel(params, data, field):
 if __name__ == "__main__":
 	if(not _ALLFIELDS):
 		for i in range(len(_FIELD_SELECTOR)):
-			modelInput = GetData(_DATA_PATH, _FIELD_SELECTOR[i])
+			modelInput = GetData(_INPUT_DIR, _FIELD_SELECTOR[i])
 			fieldName = GetFieldName(modelInput[0],_FIELD_SELECTOR[i])
 			modelParams = SetModelParams(fieldName + ".py", fieldName)
 			RunModel(modelParams, modelInput, fieldName)
-	else:
-		header = GetHeader(_DATA_PATH)
+	else: # Select Fields 
+		header = GetHeader(_INPUT_DIR)
 		print header
 		for i in range(2, len(header)):
 			# Check if results exist, then skip
-			if (not os.path.isfile(_OUTPUT_PATH + header[i] + _CSV_NAME)):
-				modelInput = GetData(_DATA_PATH, i)
+			if (not os.path.isfile(_OUTPUT_DIR + header[i] + _CSV_NAME)):
+				modelInput = GetData(_INPUT_DIR, i)
 				if (modelInput[1] != []):#Input data is not empty
 					fieldName = GetFieldName(modelInput[0], i)
 					print fieldName
