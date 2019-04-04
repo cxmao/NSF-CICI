@@ -22,7 +22,7 @@ clean-plots:
 
 clean-build: 
 	find ./config -name '*.py' -exec rm --force {} +
-	find ./results -name '*.csv' -exec rm --force {} +
+	find ../results/ -name '*.csv' -exec rm --force {} +
 
 		
 lint: 
