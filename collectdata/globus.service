@@ -1,0 +1,24 @@
+# Author: Christina Mao 
+# Date Created: 04-03-2019 
+# Description: Systemd unit file to run a globus_distr.sh daily to simulate DTN traffic 
+# To use:
+#	* Copy this file to /lib/systemd/system 
+# 	* Change permission of this file to 644 
+# 	* systemctl daemon-reload
+# 	* systemctl enable <this file> 
+# 	* reboot
+# 	* systemctl start <this file> 
+
+
+[Unit]
+Description = Run globus_distr.sh to simulate DTN traffic 
+
+
+[Service]
+#Run single execstart
+Type = simple 
+ExecStart = /bin/bash /home/cmao/Repos/nsf-cici/collectdata/globus_distr.sh 
+Restart = on-failure
+StandardOutput = syslog 
+StandardError = syslog 
+SyslogIdentifier = collectstat
