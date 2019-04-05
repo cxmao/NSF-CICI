@@ -1,3 +1,4 @@
+# Author: Brian Perry 
 #!/usr/bin/python
 
 import sys
