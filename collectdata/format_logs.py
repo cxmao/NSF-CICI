@@ -14,11 +14,11 @@ import collections  # To sort dictionaries
 
 
 #Set filedate
-FILEDATE = "2019-04-02"
+FILEDATE = "2019-04-03"
 
 #Set ProcFS data log directory paths
-STATDIR = "/home/cmao/Repos/nsf-cici/data/procfs/stat/"
-NETDIR = "/home/cmao/Repos/nsf-cici/data/procfs/net/"
+STATDIR = "/home/cmao/Repos/nsf-cici/data/procfs/"
+NETDIR = "/home/cmao/Repos/nsf-cici/data/procfs/"
 OUTDIR = "/home/cmao/Repos/nsf-cici/data/clean/procfs/"
 
 
@@ -52,7 +52,7 @@ def GetContext(filename):
 	file = open(STATDIR + filename, "r")
 	contextDict={}
 	for line in file:
-		if (re.search("ctxt", line)):
+		if(re.search("ctxt", line)):
 			elements = line.split(",")
 			contextDict[elements[0]] = int(elements[2])  #.strip("\r\n")
 	return contextDict
@@ -75,11 +75,14 @@ def GetBytes(filename):
 	bytesDict = {}
 	RxBytes = TxBytes = RxPkts = TxPkts = 0
 
+	tstamp = 0
 	for line in file:
 		elements = line.split(",")
-		# Reset counter on loopback
-		if(elements[1] == 'lo:'):
-			# Write previously stored values
+		# Data check 
+		if(len(elements) != 18):
+			pass
+		# Reset counter on new timestamp
+		elif(tstamp != elements[0]):
 			if(bool(bytesDict) and elements[1] != tstamp):
 				bytesDict[tstamp] = [RxBytes, TxBytes, RxPkts, TxPkts]
 			# Get new timestamp  and reset counters
@@ -88,7 +91,7 @@ def GetBytes(filename):
 			TxBytes = int(elements[10])
 			RxPkts = int(elements[3])
 			TxPkts = int(elements[11])
-			bytesDict[tstamp] = ''  #Hacky
+			bytesDict[tstamp] = '' # Hacky
 		else:
 			RxBytes += int(elements[2])
 			TxBytes += int(elements[10])
@@ -165,9 +168,9 @@ def main():
 
 	# Prepare csv writers to output in NuPic input format 
 	# See: http://nupic.docs.numenta.org/1.0.0/quick-start/example-data.html)
-	interruptOutput = open(OUTDIR + FILEDATE + '_interrupts_nupic.csv', 'wb')
+	interruptOutput = open(OUTDIR + FILEDATE + '_interrupts_clean.csv', 'wb')
 	interruptWriter = csv.writer(interruptOutput, delimiter=',')
-	contextOutput = open(OUTDIR + FILEDATE + '_context_nupic.csv', 'wb')
+	contextOutput = open(OUTDIR + FILEDATE + '_context_clean.csv', 'wb')
 	contextWriter = csv.writer(contextOutput, delimiter=',')
 	intHeader = [
 					"Timestamp",
