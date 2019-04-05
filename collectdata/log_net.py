@@ -45,7 +45,8 @@ def log_data(procpath, filename, outpath):
 		os.makedirs(outpath)
 	os.chdir(outpath)
 	# Create log file
-	writeFile = open(filename, "a") # Append mode
+	writeFile = open(filename, "a") 
+	writeFile.write("\n")
 	log_date = date.today()
 	while True:
 		# Check date and create new log file for new date
