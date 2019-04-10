@@ -16,8 +16,19 @@ import plotly.io as pio #To save static images
 #If $Conda install -c plotly plotly.orca fails, specify the full path 
 py.io.orca.config.executable = '/home/cmao/anaconda2/bin/orca' 
 
-_RESULTS_DIR = os.getcwd() + '/results/20190220/'
-_OUTPUT_DIR =  os.getcwd() + '/plots/20190220/'
+_INPUT_DIR = os.getcwd() + '/results/test/20190402/'
+_OUTPUT_DIR =  os.getcwd() + '/plots/test/20190402/'
+
+
+def LoadData(filepath):
+	try:
+		assert(os.path.isfile(filepath))
+	except:
+		print(filepath + " does not exist")
+	else:
+		df = pd.read_csv(filepath, sep=',')
+		df_clean = df.dropna(how='any')# Drop rows with any NaN values
+		return df_clean
 
 
 def PlotResults(csvfile):
@@ -30,7 +41,7 @@ def PlotResults(csvfile):
 		Null
 	"""
 	# Load CSV file with Pandas dataframe
-	df = pd.read_csv(csvfile, sep=',')
+	df = LoadData(csvfile)
 	keys = df.keys()
 
 	# Get field name
@@ -77,7 +88,7 @@ def PlotResults(csvfile):
 	)
 	fig = go.Figure(data=data, layout=layout)
 	# Generate HTML file and view in browser
-	py.offline.plot(fig, filename= keys[1] + '.html', auto_open=False) 
+	py.offline.plot(fig, filename= keys[1] + '.html', auto_open=True) 
 	# Save as PNG file
 	pio.write_image(fig, keys[1] + '.pdf')
 	return 
@@ -89,7 +100,7 @@ if __name__ == '__main__':
 		os.mkdir(_OUTPUT_DIR)
 	os.chdir(_OUTPUT_DIR)
 	# Create plots for all files in directory 
-	for filename in os.listdir(_RESULTS_DIR):
+	for filename in os.listdir(_INPUT_DIR):
 		# If plot image not created yet
 		if(not os.path.exists(_OUTPUT_DIR + filename + '.png')):
-			PlotResults(_RESULTS_DIR + filename)
+			PlotResults(_INPUT_DIR + filename)

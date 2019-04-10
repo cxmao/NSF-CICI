@@ -5,23 +5,10 @@ TEST_PATH=./
 
 
 help:
-	@echo "	clean-pyc"
-	@echo "		Remove python artifacts"
-	@echo "	clean-build"
-	@echo "		Remove build artifacts"
-	@echo "	test"
-	@echo "		Testing with"
-	@echo "	run"
-	@echo "		Run htm_cpu.py" 
-clean-pyc: 
-	find . -name '*.pyc' -exec rm --force {} + 
+	@echo "	clean-test"
+	@echo "		Remove artifacts from clean_logs.py testing"
 
 
-clean-build: 
-	find ../data/procfs/ -name '*.csv' -exec rm --force {} +
+clean-test:
+	find ./test -name '*.csv' -exec rm --force {} +
 
-
-test: 
-
-run: 
-	python htm_univariate.py 

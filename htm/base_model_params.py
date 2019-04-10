@@ -45,6 +45,14 @@ MODEL_PARAMS = {
     # Model parameter dictionary.
     'modelParams': {
         # The type of inference that this model will perform
+        # Supported values are :
+        # - TemporalNextStep
+        # - TemporalClassification
+        # - NontemporalClassification
+        # - TemporalAnomaly
+        # - NontemporalAnomaly
+        # - TemporalMultiStep
+        # - NontemporalMultiStep
         'inferenceType': 'TemporalAnomaly',
 
         'sensorParams': {

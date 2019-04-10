@@ -17,14 +17,20 @@ clean-pyc:
 	find . -name '*.pyc' -exec rm --force {} + 
 
 clean-plots:
-	find ./plots -name '*.html' -exec rm --force {} +
-	find ./plots -name '*.png' -exec rm --force {} + 
+	find ./plots/test -name '*.html' -exec rm --force {} +
+	find ./plots/test -name '*.png' -exec rm --force {} + 
+	find ./plots/test -name '*.pdf' -exec rm --force {} +
 
-clean-build: 
+clean-build:
 	find ./config -name '*.py' -exec rm --force {} +
+	find ./results/ -name '*.csv' -exec rm --force {} +
+
+clean-config:
+	find ./config -name '*.py' -exec rm --force {} +
+
+clean-results:
 	find ../results/ -name '*.csv' -exec rm --force {} +
 
-		
 lint: 
 	flake8 --exclude=.tox
 
