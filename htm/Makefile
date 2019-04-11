@@ -22,6 +22,11 @@ clean-test-plots:
 	find ./plots/test -name '*.png' -exec rm --force {} + 
 	find ./plots/test -name '*.pdf' -exec rm --force {} +
 
+clean-plots:
+	find ./plots/test -name '*.html' -exec rm --force {} +
+	find ./plots/test -name '*.png' -exec rm --force {} + 
+	find ./plots/test -name '*.pdf' -exec rm --force {} +
+
 
 clean-build:
 	find ./config -name '*.py' -exec rm --force {} +

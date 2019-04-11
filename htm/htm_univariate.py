@@ -40,7 +40,6 @@ _ALLFIELDS = True
 # Select based on Collectl log headers
 #_FIELD_SELECTOR = [13, 25, 37, 49, 61, 73, 85, 97] #CPU Interrupts
 _FIELD_SELECTOR = [5, 9] #Disk Read/Writes
-
 _ANOMALY_THRESHOLD = 0.80
 
 #---------------------------------------------------------------------------------------------------------
@@ -171,6 +170,13 @@ def CreateModel(params, field):
 	# Set learning 
 	model.enableLearning()
 	return model
+
+
+def SaveModel(model):
+	print("Saving model")
+	# model.finishLearning()
+	model.save( _DIR + '/model/htm_procfs/' + _FILEDATE)
+	return ModelFactory.create(params)
 
 
 def SaveModel(model):

@@ -88,7 +88,7 @@ def PlotResults(csvfile):
 	)
 	fig = go.Figure(data=data, layout=layout)
 	# Generate HTML file and view in browser
-	py.offline.plot(fig, filename= keys[1] + '.html', auto_open=False) 
+	py.offline.plot(fig, filename= keys[1] + '.html', auto_open=True) 
 	# Save as PNG file
 	pio.write_image(fig, keys[1] + '.pdf')
 	return 
