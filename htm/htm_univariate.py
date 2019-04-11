@@ -23,7 +23,7 @@ from string import Template
 import base_model_params as mp
 from nupic.frameworks.opf.model_factory import ModelFactory
 
-#--------------------------------------------------------------------------------------------------------
+
 # System variables
 _LOGGER = logging.getLogger(__name__)
 _DIR = os.getcwd()
@@ -31,8 +31,9 @@ _BASE_MODEL_PARAMS_PATH = _DIR + "/base_model_params.py"
 _CSV_NAME = "_anomaly_scores.csv"
 
 # Data Path
-_DATA_PATH = "/home/cmao/Repos/nsf-cici/data/collectl/kelewan-20190220.numa"
-_OUTPUT_PATH = _DIR + '/results/' + filter(str.isdigit, _DATA_PATH) + '/'
+_DATA_PATH = "/home/cmao/Repos/nsf-cici/data/hping1/collectl/kelewan-20190406.dsk"
+_FILEDATE = filter(str.isdigit, _DATA_PATH)
+_OUTPUT_PATH = _DIR + '/results/hping1/' + _FILEDATE  + '/'
 
 # Model variables 
 _ALLFIELDS = True 
@@ -143,7 +144,7 @@ def GetData(logs, field):
 				date_string = row[0][0:4] + "-" + row[0][4:6] + "-" + row[0][6:8] + " " + row[1]
 				# Cast to a datetime object
 				timestamp_value = datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S")
-				if(str.isdigit(row[field]) or float(row[field])):
+				if(str.isdigit(row[field]) and float(row[field])):
 					# Cast to float type
 					field_value = float(row[field])
 					# Write to record dictionary
@@ -154,7 +155,8 @@ def GetData(logs, field):
 	return header, modelInput
 
 
-def CreateModel(params):
+
+def CreateModel(params, field):
 	"""
 	Description: 
 	Parameters: 
@@ -162,17 +164,22 @@ def CreateModel(params):
 	Return: 
 		Model instance
 	"""
-	return ModelFactory.create(params)
+	print("Creating Model")
+	model = ModelFactory.create(params)
+	# Set field to predict
+	model.enableInference({"predictedField": field})  # Use the field name, not encoder name
+	# Set learning 
+	model.enableLearning()
+	return model
 
-	"""
-	# With a YAML config file 
-		with open(_MODEL_PARAMS_PATH, "r") as f:
-			modelParams = yaml.safe_load(f)
-		return ModelFactory.create(modelParams)
-	"""
+
+def SaveModel(model):
+	print("Saving model")
+	# model.finishLearning()
+	model.save( _DIR + '/model/htm_procfs/' + _FILEDATE)
 
 
-def RunModel(params, data, field):
+def RunModel(model, data, field):
 	"""
 	Description:
 	Creates HTM model based off given @params.  Writes out anomaly scores to a csv file in '/results'
@@ -182,17 +189,19 @@ def RunModel(params, data, field):
 	Returns:
 		Null
 	"""
-	model = CreateModel(params)
-	model.enableInference({"predictedField": field})#Use the field name, not the encoder name
-	
+	# Check output directory path 
+	print("Checking output directory")
+	# To-Do: Sanitize filename
+	#safeOutDir = _OUTPUT_DIR.text.replace('/', '_')
 	if not os.path.exists(_OUTPUT_PATH):
 		os.mkdir(_OUTPUT_PATH)
 	os.chdir(_OUTPUT_PATH)
 
-	csvWriter = csv.writer(open(field + _CSV_NAME, "wb"))
-	csvWriter.writerow(["timestamp", field, "anomaly_score"])
-
 	# Offline Results
+	print("Running model")
+	resultFile = field + _CSV_NAME
+	csvWriter = csv.writer(open(resultFile, "wb"))
+	csvWriter.writerow(["timestamp", field, "anomaly_score"])
 	results = []
 	for i in range(len(data[1])):
 		result = model.run(data[1][i])
@@ -203,25 +212,21 @@ def RunModel(params, data, field):
 		csvWriter.writerow([data[1][i]['timestamp'], data[1][i][field], anomalyScore]) 
 	print("Results written to " + _OUTPUT_PATH + field + _CSV_NAME)
 
+	# Save model 
+	SaveModel(model)
+
 	# Online Results
-	'''
-	# Write to Logger 
 	if anomalyScore > _ANOMALY_THRESHOLD:
 		_LOGGER.basicConfig(filename='anomaly.log', level=logging.INFO)
 		_LOGGER.info("Anomaly detected at [%s]. Anomaly score: %f.",
                     result.rawInput["timestamp"], anomalyScore)
-	'''
+	
 	return 0
 
 	
-if __name__ == "__main__":
-	if(not _ALLFIELDS):
-		for i in range(len(_FIELD_SELECTOR)):
-			modelInput = GetData(_DATA_PATH, _FIELD_SELECTOR[i])
-			fieldName = GetFieldName(modelInput[0],_FIELD_SELECTOR[i])
-			modelParams = SetModelParams(fieldName + ".py", fieldName)
-			RunModel(modelParams, modelInput, fieldName)
-	else:
+def main():
+	# Run Model on all fields in logs 
+	if(_ALLFIELDS):
 		header = GetHeader(_DATA_PATH)
 		print header
 		for i in range(2, len(header)):
@@ -230,7 +235,19 @@ if __name__ == "__main__":
 				modelInput = GetData(_DATA_PATH, i)
 				if (modelInput[1] != []):#Input data is not empty
 					fieldName = GetFieldName(modelInput[0], i)
-					print fieldName
 					modelParams = SetModelParams(fieldName + ".py", fieldName)
-					print ("Running Model for " + header[i])
-					RunModel(modelParams, modelInput, fieldName)
+					print ("Running Model for " + fieldName)
+					model = CreateModel(modelParams, fieldName)
+					RunModel(model, modelInput, fieldName)
+	# Run model on select fields
+	if(not _ALLFIELDS):  
+		for i in range(len(_FIELD_SELECTOR)):
+			modelInput = GetData(_DATA_PATH, _FIELD_SELECTOR[i])
+			fieldName = GetFieldName(modelInput[0],_FIELD_SELECTOR[i])
+			# Create new model 
+			modelParams = SetModelParams(fieldName + ".py", fieldName)
+			model = CreateModel(modelParams, fieldname)
+			RunModel(model, modelInput, fieldname)
+
+if __name__ == "__main__":
+	main()

@@ -45,6 +45,14 @@ MODEL_PARAMS = {
     # Model parameter dictionary.
     'modelParams': {
         # The type of inference that this model will perform
+        # Supported values are :
+        # - TemporalNextStep
+        # - TemporalClassification
+        # - NontemporalClassification
+        # - TemporalAnomaly
+        # - NontemporalAnomaly
+        # - TemporalMultiStep
+        # - NontemporalMultiStep
         'inferenceType': 'TemporalAnomaly',
 
         'sensorParams': {
@@ -64,7 +72,7 @@ MODEL_PARAMS = {
                 u'timestamp_timeOfDay': {
                         'fieldname': u'timestamp',
                         'name': u'timestamp_timeOfDay',
-                        'timeOfDay': (21, 9.5),
+                        'timeOfDay': (21, 9.49),
                         'type': 'DateEncoder'
                 },
                 u'timestamp_dayOfWeek': None,
@@ -128,7 +136,7 @@ MODEL_PARAMS = {
             # permanence value is above the connected threshold is
             # a "connected synapse", meaning it can contribute to the
             # cell's firing. Typical value is 0.10.
-            'synPermConnected': 0.1,
+            'synPermConnected': 0.1, 
 
             'synPermActiveInc': 0.0001,
 

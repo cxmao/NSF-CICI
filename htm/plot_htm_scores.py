@@ -4,8 +4,7 @@ Date Created: 22 February 2019
 Description: Plot all csv files generated from htm_univariate.py in '/results' and saves them to '/plots'. 
 Specify directory path  with _RESULTS_DIR
 To-do: Fix Axes alignment if Y1 has 0s
-To-do: Save as PDF instead of PNG
-To-do: Subplot option  for same 
+To-do: Subplot option  for sub fields i.e. cpu0
 """
 import os
 import pandas as pd
@@ -16,8 +15,20 @@ import plotly.io as pio #To save static images
 #If $Conda install -c plotly plotly.orca fails, specify the full path 
 py.io.orca.config.executable = '/home/cmao/anaconda2/bin/orca' 
 
-_RESULTS_DIR = os.getcwd() + '/results/20190220/'
-_OUTPUT_DIR =  os.getcwd() + '/plots/20190220/'
+_DATE = 20190406
+_INPUT_DIR = os.getcwd() + '/results/hping1/nab/' + str(_DATE) +"/"
+_OUTPUT_DIR = os.getcwd() + '/plots/hping1/nab/' + str(_DATE) + "/"
+
+
+def LoadData(filepath):
+	try:
+		assert(os.path.isfile(filepath))
+	except:
+		print(filepath + " does not exist")
+	else:
+		df = pd.read_csv(filepath, sep=',')
+		df_clean = df.dropna(how='any')# Drop rows with any NaN values
+		return df_clean
 
 
 def PlotResults(csvfile):
@@ -30,7 +41,7 @@ def PlotResults(csvfile):
 		Null
 	"""
 	# Load CSV file with Pandas dataframe
-	df = pd.read_csv(csvfile, sep=',')
+	df = LoadData(csvfile)
 	keys = df.keys()
 
 	# Get field name
@@ -86,10 +97,17 @@ def PlotResults(csvfile):
 if __name__ == '__main__':
 	# Create directory to store plot images
 	if not os.path.exists(_OUTPUT_DIR):
-		os.mkdir(_OUTPUT_DIR)
+		os.makedirs(_OUTPUT_DIR)
 	os.chdir(_OUTPUT_DIR)
+
+	# Check input direcotry 
+	try: 
+		 os.path.exists(_INPUT_DIR)
+	except  ValueError as error: 
+		print ("No such directory" + _INPUT_DIR)
+
 	# Create plots for all files in directory 
-	for filename in os.listdir(_RESULTS_DIR):
+	for filename in os.listdir(_INPUT_DIR):
 		# If plot image not created yet
 		if(not os.path.exists(_OUTPUT_DIR + filename + '.png')):
-			PlotResults(_RESULTS_DIR + filename)
+			PlotResults(_INPUT_DIR + filename)
