@@ -31,7 +31,7 @@ _BASE_MODEL_PARAMS_PATH = _DIR + "/base_model_params.py"
 _CSV_NAME = "_anomaly_scores.csv"
 
 # Data Path
-_DATA_PATH = "/home/cmao/Repos/nsf-cici/data/hping1/collectl/kelewan-20190406.dsk"
+_DATA_PATH = "/home/cmao/Repos/nsf-cici/data/hping1/collectl/kelewan-20190406.net"
 _FILEDATE = filter(str.isdigit, _DATA_PATH)
 _OUTPUT_PATH = _DIR + '/results/hping1/' + _FILEDATE  + '/'
 
@@ -172,17 +172,11 @@ def CreateModel(params, field):
 	return model
 
 
-def SaveModel(model):
+def SaveModel(model, field):
 	print("Saving model")
 	# model.finishLearning()
-	model.save( _DIR + '/model/htm_procfs/' + _FILEDATE)
-	return ModelFactory.create(params)
-
-
-def SaveModel(model):
-	print("Saving model")
-	# model.finishLearning()
-	model.save( _DIR + '/model/htm_procfs/' + _FILEDATE)
+	model.save( _DIR + '/model/htm_procfs/' + _FILEDATE + "/"+ field)
+	return 
 
 
 def RunModel(model, data, field):
@@ -219,7 +213,7 @@ def RunModel(model, data, field):
 	print("Results written to " + _OUTPUT_PATH + field + _CSV_NAME)
 
 	# Save model 
-	SaveModel(model)
+	SaveModel(model, field)
 
 	# Online Results
 	if anomalyScore > _ANOMALY_THRESHOLD:

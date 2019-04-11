@@ -9,10 +9,7 @@
 # TO-DO: Update function documentation
 # To-Do: Pull Aggregate logs function from htm_streaming
 # To-Do: Python script to aggregate logs
-<<<<<<< HEAD
 # To-Do: Checkpoint model  
-=======
->>>>>>> 0659e19cee73e87f9da88d6daa0a1a9a651612a6
 #-------------------------------------------------------------------------------------------------------
 from datetime import datetime
 from datetime import date
@@ -24,11 +21,7 @@ import logging
 import simplejson as json
 from string import Template
 # Nupic OPF
-<<<<<<< HEAD
 import nab_model_params as mp
-=======
-import base_model_params as modelparams
->>>>>>> 0659e19cee73e87f9da88d6daa0a1a9a651612a6
 from nupic.frameworks.opf.model_factory import ModelFactory
 # Data Processing
 import pandas as pd
@@ -41,7 +34,6 @@ _DIR = os.getcwd()
 _OUTFILE_SUF = "_anomaly_scores.csv"
 
 # Set Input Data Paths
-<<<<<<< HEAD
 _FILENAME = "2019-04-06_interrupts_clean.csv"
 dateMatch = re.search(r'\d{4}-\d{2}-\d{2}', _FILENAME)
 dateStrip = str(datetime.datetime.strptime(dateMatch.group(), "%Y-%m-%d").date())
@@ -55,23 +47,6 @@ _OUTPUT_DIR = "/home/cmao/Repos/nsf-cici/htm/results/hping1/nab/" + _FILEDATE  +
 _ALLFIELDS = False # Run model for all columns in input file
 _FIELD_SELECTOR = [2] # Columns 
 _LEARN = True # Set CLA classifier
-=======
-_FILENAME = "2019-04-02_context_clean.csv"
-dateMatch = re.search(r'\d{4}-\d{2}-\d{2}', _FILENAME)
-dateStrip = str(datetime.datetime.strptime(dateMatch.group(), "%Y-%m-%d").date())
-_FILEDATE = filter(str.isdigit,dateStrip) # 
-_INPUT_DIR = "/home/cmao/Repos/nsf-cici/data/test/clean/" 
-
-# Set Output Data Paths
-
-_OUTPUT_DIR = "/home/cmao/Repos/nsf-cici/htm/results/test/" + _FILEDATE  + "/"
-
-# Set Model Parameters
-_ALLFIELDS = True # Run model for all columns in input file
-#To-do: Write code for select fields
-_FIELD_SELECTOR = [1] 
-_LEARN = True# Set CLA classifier
->>>>>>> 0659e19cee73e87f9da88d6daa0a1a9a651612a6
 _ANOMALY_THRESHOLD = 0.80 # Default threshold is 0.80
 
 
@@ -84,14 +59,11 @@ def LoadData(filepath):
 		df = pd.read_csv(filepath)
 		df_clean = df.dropna(how='any')# Drop rows with any NaN values
 		return df_clean
-<<<<<<< HEAD
 
 
 def SaveModelInput():
 	#To-do
 	return
-=======
->>>>>>> 0659e19cee73e87f9da88d6daa0a1a9a651612a6
 
 
 def SetModelParams(filename, filedate, field):
@@ -248,7 +220,6 @@ def main():
 				header = [timestamp, metric]
 				modelInput = GetData(df, header, metric)
 				RunModel(model, modelInput, _FILEDATE, metric)
-<<<<<<< HEAD
 
 	# Run model for select fields in clean datafile
 	if(not _ALLFIELDS and len(_FIELD_SELECTOR) > 0):
