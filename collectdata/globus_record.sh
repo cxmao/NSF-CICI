@@ -1,7 +1,3 @@
-
-
-#!/usr/bin/env bash
-#
 # AUTHOR: Christina Mao
 # DATE: 03-11-2018
 # DESCRIPTION:Run Globus transfers randomly between a period of 5 minutes to 1 hour
@@ -49,10 +45,11 @@ INTERVAL=3600
 while true; do
         curr_time=$(date +"%H")
         rand_file=$(($RANDOM % 100 + 1))
-        interval=$(($RANDOM % 3540 + 60))
+        interval=$(($RANDOM % 10 + 1))
         echo $interval "seconds until next transfer"
         sleep $interval
-        date >> $LOG_FILE
+        date_var=$(date)
+        echo -n $date_var >> $LOG_FILE
 
         if [[ $curr_time -eq $DELETE_TIME ]] && ! $REMOVED_SWITCH
         then
@@ -92,7 +89,9 @@ while true; do
         s=$(( $RANDOM % ${#SMALLDATA[@]}))
         m=$(( $RANDOM % ${#MEDIUMDATA[@]}))
         l=$(( $RANDOM % ${#LARGEDATA[@]}))
-        echo ${DTNS[i]} >> $LOG_FILE
+        echo -n " " >> $LOG_FILE
+        echo -n ${DTNS[i]} >> $LOG_FILE
+        echo -n " " >> $LOG_FILE
 
         # Start Globus transfer
         # random chance of grabbing a small file, medium file, or large file from a random dtn
@@ -117,5 +116,5 @@ while true; do
         globus_pid=$!
         echo $globus_pid
         wait $globus_pid
-        echo "Globus finished transfer" >> $LOG_FILE
+        #echo "Globus finished transfer" >> $LOG_FILE
 done
