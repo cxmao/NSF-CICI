@@ -43,9 +43,11 @@ INTERVAL=3600
 
 #echo "testing" > $LOG_FILE
 while true; do
+        #Start the iperf3 server
+        iperf3 -s -D
         curr_time=$(date +"%H")
         rand_file=$(($RANDOM % 100 + 1))
-        interval=$(($RANDOM % 10 + 1))
+        interval=$(($RANDOM % 3540 + 60))
         echo $interval "seconds until next transfer"
         sleep $interval
         date_var=$(date)
