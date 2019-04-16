@@ -1,4 +1,4 @@
-# Setup the hping3 SYN flood experiment
+# Setup the hping3 SYN flood experiment with iperf3
 echo "/home/ross/testing/syn_12pm.sh" | sudo at 12pm tomorrow
 echo "/home/ross/testing/syn_2pm.sh" | sudo at 2pm tomorrow
 echo "/home/ross/testing/syn_4pm.sh" | sudo at 4pm tomorrow
