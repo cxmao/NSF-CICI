@@ -17,7 +17,10 @@ Description = Run log_interrupt.py to log /proc/interrupt data
 #Run single execstart
 Type = simple
 ExecStart = /usr/bin/python /home/cmao/Repos/nsf-cici/collectdata/log_interrupt.py 
-Restart = on-failure
+Restart = always
 StandardOutput = syslog 
 StandardError = syslog 
 SyslogIdentifier = collectinterrupt
+
+[Install]
+WantedBy = multi-user.target

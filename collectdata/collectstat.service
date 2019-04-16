@@ -17,7 +17,10 @@ Description = Run log_stat.py to log /proc/stat data
 [Service]
 Type = simple 
 ExecStart = /usr/bin/python /home/cmao/Repos/nsf-cici/collectdata/log_stat.py 
-Restart = on-failure
+Restart = always
 StandardOutput = syslog 
 StandardError = syslog 
 SyslogIdentifier = collectstat
+
+[Install]
+WantedBy = multi-user.target

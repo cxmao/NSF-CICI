@@ -22,3 +22,6 @@ Restart = on-failure
 StandardOutput = syslog 
 StandardError = syslog 
 SyslogIdentifier = collectstat
+
+[Install]
+WantedBy = multi-user.target
