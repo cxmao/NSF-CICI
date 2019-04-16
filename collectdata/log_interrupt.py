@@ -35,7 +35,10 @@ def log_data(procpath, filename, outpath):
 		# Check date and create new log file for new date
 		if(date.today() != log_date):
 			log_date = date.today()
+			# Create new log file
 			filename = str(log_date) + "_interrupts.csv"
+			writeFile = open(filename, "a")
+			writeFile.write("\n")
 		# Read Proc FS File
 		with open(procpath) as file:
 			# Get timestamp
