@@ -5,9 +5,9 @@
 
 ## Useful commands: 
 ### To Check if background logging and Globus transfers are running: 
-'''
+```
 sudo systemctl status  collectstat.service && systemctl status collectnet.service && systemctl status collectinterrupt.service  && systemctl status globus.service 
-'''
+```
 
 ## Data on Kelewan:  
 	* Collectl: /var/log/collectl/
