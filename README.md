@@ -2,6 +2,7 @@
 
 ## Useful References: 
 [ESNET DTNs](https://fasterdata.es.net/performance-testing/DTNs/)
+[ESNET Switch Monitoring](https://graphite.es.net/west/)
 
 ## Useful commands: 
 ### To Check if background logging and Globus transfers are running: 
