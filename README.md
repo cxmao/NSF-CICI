@@ -1,8 +1,8 @@
 # NSF-CICI
 
-##Data on Kelewan:  
+## Data on Kelewan:  
 	* Collectl: /var/log/collectl/
-	* Procfs: /var/log/procfs/
+	* Procfs: /home/cmao/Repos/nsf-cici/data/procfs/
 1. Copy data files from Kelewan to local (/Repos/nsf-cici/data/<experiment_name>)
 		* Collectl 
 		* ProcFS/raw
