@@ -10,6 +10,7 @@
 # To-Do: Pull Aggregate logs function from htm_streaming
 # To-Do: Python script to aggregate logs
 # To-Do: Checkpoint model  
+# To-Do: Insert underscores for results filenames
 #-------------------------------------------------------------------------------------------------------
 from datetime import datetime
 from datetime import date
@@ -21,7 +22,7 @@ import logging
 import simplejson as json
 from string import Template
 # Nupic OPF
-import nab_model_params as mp
+import experimental_model_params as mp
 from nupic.frameworks.opf.model_factory import ModelFactory
 # Data Processing
 import pandas as pd
@@ -41,14 +42,19 @@ _FILEDATE = filter(str.isdigit, dateStrip) # Extracted date from FILENAME
 _INPUT_DIR = "/home/cmao/Repos/nsf-cici/data/hping1/procfs/clean/" 
 
 # Set Output Data Path
-_OUTPUT_DIR = "/home/cmao/Repos/nsf-cici/htm/results/hping1/nab/" + _FILEDATE  + "/"
+_OUTPUT_DIR = "/home/cmao/Repos/nsf-cici/htm/plots/hping1/" + _FILEDATE  + "/"
 
 # Set Model Parameters
 _ALLFIELDS = False # Run model for all columns in input file
 _FIELD_SELECTOR = [2] # Columns 
 _LEARN = True # Set CLA classifier
 _ANOMALY_THRESHOLD = 0.80 # Default threshold is 0.80
+_PRINT_STATS = True
+_TESTING = True
 
+if _TESTING == True: 
+	_TEST_TIME = datetime.datetime.now().strftime("%m%d%y-%H:%M")
+	_OUTPUT_DIR = "/home/cmao/Repos/nsf-cici/htm/parameter-test/hping1/" + _FILEDATE  + "/" + _TEST_TIME + "/"
 
 def LoadData(filepath):
 	try:
@@ -79,12 +85,16 @@ def SetModelParams(filename, filedate, field):
 	Returns:
 		dictdump - <dict>  All headers taken from Collectl Log 
 	"""
-	configDir = _DIR + '/config/' + filedate + "/"
+
+	if _TESTING == True: 
+		configDir = _OUTPUT_DIR
+	else: 
+		configDir = _DIR + '/config/' + filedate + "/"
 	if not (os.path.exists(configDir)):
 		os.mkdir(configDir)
 	#Create a new configuration Python file 
 	with open(configDir + filename, "w+") as f:
-		data = json.dumps(modelparams.MODEL_PARAMS, sort_keys=False, indent=4)#Convert python object to a serialized JSON string 
+		data = json.dumps(mp.MODEL_PARAMS, sort_keys=False, indent=4)#Convert python object to a serialized JSON string 
 		# Modify parameters in the new file
 		temp_data = Template(data)
 		final = temp_data.substitute(fieldname=field)
@@ -148,10 +158,16 @@ def PrintModelParams(model):
 	print("Inference:", model.isInferenceEnabled())
 	print("Learning:", model.isLearningEnabled())
 
-def SaveModel(model):
+
+def SaveModel(model, field):
 	print("Saving Model")
-	#model.FinishLearning()
-	model.save(_DIR + '/model/htm_procfs/' + _FILEDATE)
+	# Serializing 
+	with open(_DIR + '/model/htm_procfs/' + _FILEDATE + "_" + field + ".tmp", "wb") as f:
+			model.writeToFile(f)
+	# OPF Save/Load is deprecated
+	#model.save(_DIR + '/model/htm_procfs/' + _FILEDATE + "_" + field)
+	return
+
 
 
 def RunModel(model, data, filedate, field):
@@ -180,7 +196,9 @@ def RunModel(model, data, filedate, field):
 	results = []
 	print len(data)
 	for i in range(0, len(data)):
-		print("Runtime Stats:",  model.getRuntimeStats())
+		if(_PRINT_STATS):
+			print("Runtime Stats:",  model.getRuntimeStats())
+		print data[i]
 		result = model.run(data[i])
 		# Log results
 		results.append(result)
@@ -190,13 +208,14 @@ def RunModel(model, data, filedate, field):
 	print("Results written to " + _OUTPUT_DIR + resultFile)
 
 	#Save model 
-	SaveModel(model)
+	SaveModel(model, field)
 	
 	# Online Results
 	if(anomalyScore > _ANOMALY_THRESHOLD):
 		_LOGGER.info("Anomaly detected at [%s]. Anomaly score: %f.",
                     result.rawInput["timestamp"], anomalyScore)
 	return
+
 
 
 def main():
@@ -224,8 +243,11 @@ def main():
 	# Run model for select fields in clean datafile
 	if(not _ALLFIELDS and len(_FIELD_SELECTOR) > 0):
 		for i in range(0, len(_FIELD_SELECTOR)):
-			print _FIELD_SELECTOR
-			configFilename = str(date.today()) + '_' + fields[i] + '.py'
+			print fields[_FIELD_SELECTOR[i]]
+			if _TESTING == True: 
+				configFilename = _TEST_TIME + '_' + fields[_FIELD_SELECTOR[i]]+ '.py'
+			else: 
+				configFilename = str(date.today()) + '_' + fields[_FIELD_SELECTOR[i]]+ '.py'
 			timestamp = fields[0]
 			metric = fields[_FIELD_SELECTOR[i]]
 			# Create new model

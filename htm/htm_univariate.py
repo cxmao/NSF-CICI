@@ -173,9 +173,12 @@ def CreateModel(params, field):
 
 
 def SaveModel(model, field):
-	print("Saving model")
-	# model.finishLearning()
-	model.save( _DIR + '/model/htm_procfs/' + _FILEDATE + "/"+ field)
+	print("Saving Model")
+	# Serializing 
+	with open(_DIR + '/model/htm_procfs/' + _FILEDATE + "_" + field + ".tmp", "wb") as f:
+			model.writeToFile(f)
+	# OPF Save/Load is deprecated
+	#model.save(_DIR + '/model/htm_procfs/' + _FILEDATE + "_" + field)
 	return 
 
 
@@ -217,7 +220,6 @@ def RunModel(model, data, field):
 
 	# Online Results
 	if anomalyScore > _ANOMALY_THRESHOLD:
-		_LOGGER.basicConfig(filename='anomaly.log', level=logging.INFO)
 		_LOGGER.info("Anomaly detected at [%s]. Anomaly score: %f.",
                     result.rawInput["timestamp"], anomalyScore)
 	
@@ -250,4 +252,5 @@ def main():
 			RunModel(model, modelInput, fieldname)
 
 if __name__ == "__main__":
+	logging.basicConfig(filename='anomaly.log', level=logging.INFO)
 	main()
