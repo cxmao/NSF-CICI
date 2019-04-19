@@ -1,8 +1,19 @@
 # NSF-CICI
 
+## Useful References: 
+[ESNET DTNs](https://fasterdata.es.net/performance-testing/DTNs/)
+
+## Useful commands: 
+### To Check if background logging and Globus transfers are running: 
+'''
+sudo systemctl status  collectstat.service && systemctl status collectnet.service && systemctl status collectinterrupt.service  && systemctl status globus.service 
+'''
+
 ## Data on Kelewan:  
 	* Collectl: /var/log/collectl/
 	* Procfs: /home/cmao/Repos/nsf-cici/data/procfs/
+	
+## Workflow: 
 1. Copy data files from Kelewan to local (/Repos/nsf-cici/data/<experiment_name>)
 		* Collectl 
 		* ProcFS/raw
