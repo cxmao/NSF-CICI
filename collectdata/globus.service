@@ -17,11 +17,11 @@ Description = Run globus_distr.sh to simulate DTN traffic
 [Service]
 #Run single execstart
 Type = simple 
-ExecStart = /bin/bash /home/cmao/Repos/nsf-cici/collectdata/globus_distr.sh 
+ExecStart = /bin/bash /home/cmao/Repos/nsf-cici/collectdata/globus_record.sh 
 Restart = on-failure
 StandardOutput = syslog 
 StandardError = syslog 
-SyslogIdentifier = collectstat
+SyslogIdentifier = globus
 
 [Install]
 WantedBy = multi-user.target

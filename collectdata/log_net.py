@@ -16,7 +16,7 @@ import sys, signal  # Handle CTRL-C
 
 __PROCPATH = "/proc/net/dev"
 __FILE_NAME = str(date.today()) + "_net.csv"
-__OUTPATH = "/home/cmao/Repos/nsf-cici/data/procfs/net/"
+__OUTPATH = "/var/log/procfs/"
 
 
 def signal_handler(signal, frame):

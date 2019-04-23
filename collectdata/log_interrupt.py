@@ -14,7 +14,7 @@ import sys, signal  # Handle CTRL-C
 
 __PROCPATH = "/proc/interrupts"
 __FILE_NAME = str(date.today()) + "_interrupts.csv"
-__OUTPATH = "/home/cmao/Repos/nsf-cici/data/procfs/interrupts/"
+__OUTPATH = "/var/log/procfs/"
 
 
 def signal_handler(signal, frame):
