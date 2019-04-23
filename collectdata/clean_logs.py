@@ -6,6 +6,8 @@
 #---------------------------------------------------------------------------------
 from __future__ import division
 from datetime import datetime
+from datetime import timedelta
+from dateutil.parser import parse
 import argparse
 import os
 import re
@@ -104,6 +106,7 @@ def GetBytes(filename):
 def GetMetrics(numdict, denomdict, csvwriter):
 	row = []
 	keylist = sorted(numdict.keys()) # to access index 
+	prevTimestamp = "2000-01-01 00:00:00"
 	for index, key in enumerate(keylist):
 		try:
 			"""
@@ -117,14 +120,15 @@ def GetMetrics(numdict, denomdict, csvwriter):
 			# Ignore first row 
 			if(index > 0):
 				prevInt = numdict[keylist[index - 1]]
-
-			# Match by time
-			if(key in denomdict and index > 0):
-				# Total Interrupts
+			# Match by timestamp and check for 1s diff 
+			tsdelta = datetime.strptime(prevTimestamp, '%Y-%m-%d %H:%M:%S') - datetime.strptime(key, '%Y-%m-%d %H:%M:%S')
+			if(index > 0 and key in denomdict  and tsdelta.total_seconds()== -1.0):
+				# Get Total Interrupts
+				print key + str(numdict[key])
 				row.extend((key, numdict[key]))  # Append sequence
 				# Get interrupts per second
 				currInt = numdict[key]
-				intps = currInt - prevInt
+				intps = abs(currInt - prevInt)
 				row.append(intps)
 				# Get interrupts with Bytes/Packets Rxed and Txed
 				for v in range(0, len(denomdict[key])):
@@ -132,6 +136,7 @@ def GetMetrics(numdict, denomdict, csvwriter):
 					row.append('%.5f' % temp)
 				csvwriter.writerow(row)
 				del row[:]  # Clear list
+			prevTimestamp = key 
 		except IndexError:
 			pass
 
