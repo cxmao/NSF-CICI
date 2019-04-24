@@ -16,7 +16,10 @@ LOG_FILE="globus_records.txt"
 DTNS=("//cern-dtn.es.net" "//sunn-dtn.es.net" "//star-dtn.es.net")
 DATASETS=("/data1/500G.dat" "/data1/100G.dat" "/data1/50G.dat" "/data1/10G.dat" "/data1/1G.dat"  "/data1/100M.dat")
 CLIMATEDATA=("/data1/Climate-Huge" "/data1/Climate-Large" "/data1/Climate-Medium" "/data1/Climate-Small")
-SMALLDATA=("//data1/10M.dat" "//data1/50M.dat" "//data1/100M.dat" "//data1/1G.dat" "//data1/10G.dat" "//data1/50G.dat")
+
+#changing SMALLDATA to the only used list, just ignore the name
+SMALLDATA=("//data1/10G.dat" "//data1/50G.dat")
+
 MEDIUMDATA=("//data1/10G.dat" "//data1/50G.dat" "//data1/100G.dat")
 LARGEDATA=("//data1/100G.dat" "//data1/500G.dat")
 
@@ -41,7 +44,7 @@ while true; do
         iperf3 -s -D
         curr_time=$(date +"%H")
         rand_file=$(($RANDOM % 100 + 1))
-        interval=$(($RANDOM % 1740 + 60))
+        interval=$(($RANDOM % 840 + 3480))
         echo $interval "seconds until next transfer"
         sleep $interval
         date_var=$(date)
