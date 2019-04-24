@@ -18,7 +18,7 @@ DATASETS=("/data1/500G.dat" "/data1/100G.dat" "/data1/50G.dat" "/data1/10G.dat" 
 CLIMATEDATA=("/data1/Climate-Huge" "/data1/Climate-Large" "/data1/Climate-Medium" "/data1/Climate-Small")
 
 #changing SMALLDATA to the only used list, just ignore the name
-SMALLDATA=("//data1/10G.dat" "//data1/50G.dat")
+SMALLDATA=("//data1/10M.dat" "//data1/50M.dat" "//data1/100M.dat" "//data1/1G.dat" "//data1/10G.dat" "//data1/50G.dat")
 
 MEDIUMDATA=("//data1/10G.dat" "//data1/50G.dat" "//data1/100G.dat")
 LARGEDATA=("//data1/100G.dat" "//data1/500G.dat")
