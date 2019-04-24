@@ -8,7 +8,12 @@
 ## Useful commands: 
 ### To Check if background logging and Globus transfers are running: 
 ```
-sudo systemctl status  collectstat.service && systemctl status collectnet.service && systemctl status collectinterrupt.service  && systemctl status globus.service 
+sudo systemctl status  collectstat.service  collectnet.service  collectinterrupt.service globus.service 
+```
+
+### Hping Attacks: 
+```
+echo "<script location>" | sudo at <time> tomorrow
 ```
 
 ## Data on Kelewan:  
