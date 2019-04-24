@@ -5,7 +5,16 @@
 
 [ESNET Switch Monitoring](https://graphite.es.net/west/)
 
-## Useful commands: 
+## Experiment Setup Commands: 
+### Setting up a Systemd Service: 
+```
+sudo cp <unit file> /lib/systemd/system/
+sudo chmod 644 <unit file> 
+sudo systemctl daemon-reload #Reread the modified unit file 
+sudo systemctl enable <unit file> #Starts service at boot
+(reboot) 
+sudo systemctl restart <unit file> 
+```
 ### To Check if background logging and Globus transfers are running: 
 ```
 sudo systemctl status  collectstat.service  collectnet.service  collectinterrupt.service globus.service 
