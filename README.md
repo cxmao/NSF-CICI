@@ -8,6 +8,7 @@
 ## Experiment Setup Commands: 
 ### Setting up a Systemd Service: 
 ```
+# Create a systemd unit file
 sudo cp <unit file> /lib/systemd/system/
 sudo chmod 644 <unit file> 
 sudo systemctl daemon-reload #Reread the modified unit file 
@@ -19,7 +20,20 @@ sudo systemctl restart <unit file>
 ```
 sudo systemctl status  collectstat.service  collectnet.service  collectinterrupt.service globus.service 
 ```
-
+### Setting up Journalctl logging: 
+Edit /etc/systemd/journal.conf: 
+```
+storage = persistent
+```
+Make a new directory to persistently store Journald logs, otherwise logs are stored in /run/log/journal which volatile on reboots. 
+```
+mkdir /var/log/journal
+```
+To check Journald logs: 
+```
+sudo journalctl --list-boots #shows previous boots
+sudo journalctl -u globus.service -b <boot#>
+```
 ### Hping Attacks: 
 ```
 echo "<script location>" | sudo at <time> tomorrow
