@@ -33,7 +33,7 @@ DEST="/home/ross/globus_files/"
 FLOWS=$(shuf -i 4-8 -n 1)
 PROTOCOL="ftp"
 #TIME BETWEEN TRANSFERS IN SECONDS
-INTERVAL=3600
+INTERVAL=1800
 
 #echo "testing" > $LOG_FILE
 while true; do
