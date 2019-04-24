@@ -44,7 +44,7 @@ while true; do
         iperf3 -s -D
         curr_time=$(date +"%H")
         rand_file=$(($RANDOM % 100 + 1))
-        interval=$(($RANDOM % 840 + 3480))
+        interval=$(($RANDOM % 1740 + 60))
         echo $interval "seconds until next transfer"
         sleep $interval
         date_var=$(date)
