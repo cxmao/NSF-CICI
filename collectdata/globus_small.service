@@ -11,13 +11,13 @@
 
 
 [Unit]
-Description = Run globus_distr.sh to simulate DTN traffic 
+Description = Run globus_small.sh to simulate DTN traffic with small number of large files
 
 
 [Service]
 #Run single execstart
 Type = simple 
-ExecStart = /bin/bash /home/cmao/Repos/nsf-cici/collectdata/globus_distr.sh 
+ExecStart = /bin/bash /home/cmao/Repos/nsf-cici/collectdata/globus_small.sh 
 Restart = on-failure
 StandardOutput = syslog 
 StandardError = syslog 
