@@ -23,7 +23,7 @@ LARGEDATA=("//data1/100G.dat" "//data1/500G.dat")
 #Climate data on one day, otherwise use normal data files
 
 #Time of day to clean the file transfer directory
-DELETE_TIME=23
+DELETE_TIME=12
 #Don't remove file more than once during that hour
 REMOVED_SWITCH=false
 
