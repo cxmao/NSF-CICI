@@ -14,7 +14,8 @@ sudo chmod 644 <unit file>
 sudo systemctl daemon-reload #Reread the modified unit file 
 sudo systemctl enable <unit file> #Starts service at boot
 (reboot) 
-sudo systemctl restart <unit file> 
+sudo systemctl start <unit file> 
+sudo systemctl restart <unit file> #Restart service
 ```
 ### To Check if background logging and Globus transfers are running: 
 ```
