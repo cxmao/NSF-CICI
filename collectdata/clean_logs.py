@@ -124,7 +124,6 @@ def GetMetrics(numdict, denomdict, csvwriter):
 			tsdelta = datetime.strptime(prevTimestamp, '%Y-%m-%d %H:%M:%S') - datetime.strptime(key, '%Y-%m-%d %H:%M:%S')
 			if(index > 0 and key in denomdict  and tsdelta.total_seconds()== -1.0):
 				# Get Total Interrupts
-				print key + str(numdict[key])
 				row.extend((key, numdict[key]))  # Append sequence
 				# Get interrupts per second
 				currInt = numdict[key]
