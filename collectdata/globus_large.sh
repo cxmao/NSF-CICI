@@ -35,8 +35,6 @@ REMOVED_SWITCH=false
 DEST="/home/ross/globus_files/"
 FLOWS=$(shuf -i 4-8 -n 1)
 PROTOCOL="ftp"
-#TIME BETWEEN TRANSFERS IN SECONDS
-INTERVAL=1800
 
 #echo "testing" > $LOG_FILE
 while true; do
@@ -44,7 +42,7 @@ while true; do
         iperf3 -s -D
         curr_time=$(date +"%H")
         rand_file=$(($RANDOM % 100 + 1))
-        interval=$(($RANDOM % 840 + 3480))
+        interval=$(($RANDOM % 900 + 3600))
         echo $interval "seconds until next transfer"
         sleep $interval
         date_var=$(date)
