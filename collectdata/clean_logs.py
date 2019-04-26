@@ -13,11 +13,12 @@ import os
 import re
 import csv
 import collections  # To sort dictionaries
+from operator import sub
 
-ROOTDIR = "/home/cmao/Repos/nsf-cici/data/hping1"
+ROOTDIR = "/home/cmao/Repos/nsf-cici/data/experiment1/"
 
 #Set filedate
-FILEDATE = "2019-04-05"
+FILEDATE = "2019-04-24"
 # Set Input (Raw ProcFS logs) directory
 STATDIR = ROOTDIR + "/procfs/raw/"
 NETDIR = ROOTDIR + "/procfs/raw/"
@@ -100,14 +101,17 @@ def GetBytes(filename):
 			TxBytes += int(elements[10])
 			RxPkts += int(elements[3])
 			TxPkts += int(elements[11])
+
 	return bytesDict
 
 
 def GetMetrics(numdict, denomdict, csvwriter):
+	print len(numdict)
+	print len(denomdict)
 	row = []
-	keylist = sorted(numdict.keys()) # to access index 
+	numkeys = sorted(numdict.keys()) # to access index
 	prevTimestamp = "2000-01-01 00:00:00"
-	for index, key in enumerate(keylist):
+	for index, key in enumerate(numkeys):
 		try:
 			"""
 			print("index", index)
@@ -117,27 +121,40 @@ def GetMetrics(numdict, denomdict, csvwriter):
 			print("Value",numdict[keylist[index]])
 			print("Value",numdict[key])
 			"""
-			# Ignore first row 
-			if(index > 0):
-				prevInt = numdict[keylist[index - 1]]
-			# Match by timestamp and check for 1s diff 
+			prevkey = numkeys[index -1]
+			# Skip first row because we can't get previous value to calculate from
+			if(index > 0 and prevkey in denomdict):
+				prevInt = numdict[prevkey]
+				prevBytes = denomdict[prevkey]
+
+			# Match by timestamp and check for 1s diff
 			tsdelta = datetime.strptime(prevTimestamp, '%Y-%m-%d %H:%M:%S') - datetime.strptime(key, '%Y-%m-%d %H:%M:%S')
-			if(index > 0 and key in denomdict  and tsdelta.total_seconds()== -1.0):
-				# Get Total Interrupts
-				row.extend((key, numdict[key]))  # Append sequence
-				# Get interrupts per second
-				currInt = numdict[key]
-				intps = abs(currInt - prevInt)
-				row.append(intps)
-				# Get interrupts with Bytes/Packets Rxed and Txed
-				for v in range(0, len(denomdict[key])):
-					temp = float(numdict[key]/denomdict[key][v])
-					row.append('%.5f' % temp)
-				csvwriter.writerow(row)
-				del row[:]  # Clear list
-			prevTimestamp = key 
-		except IndexError:
+			print tsdelta
+			if(index > 0 and key in denomdict and len(denomdict[key]) == 4):
+				# Get Bytes/Packets Rxed and Txed per second
+				currBytes = denomdict[key]
+				print "prev" + str(prevBytes)
+				print "curr" + str(currBytes)
+				bytesPs = map(lambda x, y: abs(x - y), prevBytes, currBytes)
+				print "ps" + str(bytesPs)
+				if(tsdelta.total_seconds() == -1.0):
+						# Get Total Interrupts/Context Switches
+						row.extend((key, numdict[key]))  # Append sequence
+						# Get interrupts/Context Switches per second
+						currInt = numdict[key]
+						intPs = abs(currInt - prevInt)
+						row.append(intPs)
+
+						# Get Interrupts/Context Switches Ratio w Bytes/Packets
+						for v in range(0, len(bytesPs)):
+							ratio = float(bytesPs[v]/intPs)
+							row.append('%.5f' % ratio)
+						csvwriter.writerow(row)
+						del row[:]  # Clear list
+			prevTimestamp = key
+		except IndexError or KeyError:
 			pass
+	return
 
 
 def DirExists(dirpath):
@@ -182,14 +199,26 @@ def main():
 
 	"""
 	 Process dictionaries to get metrics:
+	 	# Interrupts Clean
 		IBR = Interrupts/Bytes Received
 		IBT = Interrupts/Bytes Transferred
 		IPR = Interrupts/Packets Received
 		IPR = Interrupts/Packets Transferred
+		BTI = Context Switch/Bytes Transferred
+		BRI = Context Switch/Bytes Received
+		PTI =  Context Switch/Packets Transferred
+		PRI = Context Switch/Packets Received
+
+		# Context Clean
 		CBT = Context Switch/Bytes Transferred
 		CBR = Context Switch/Bytes Received
 		CPT =  Context Switch/Packets Transferred
 		CPR = Context Switch/Packets Received
+
+		BTC = Context Switch/Bytes Transferred
+		BRC = Context Switch/Bytes Received
+		PTC =  Context Switch/Packets Transferred
+		PRC = Context Switch/Packets Received
 	"""
 
 	# Prepare csv writers to output in NuPic input format 
@@ -238,7 +267,6 @@ def main():
 	contextWriter.writerow(flags)
 
 	# Get Metrics
-
 	GetMetrics(intDict, netDict, interruptWriter)
 	print ("Results  written to " + interruptsFile)
 	GetMetrics(contDict, netDict, contextWriter)
