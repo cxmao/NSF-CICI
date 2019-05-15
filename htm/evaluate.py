@@ -2,18 +2,20 @@
 # Date Created: 04-25-2019
 # Description:Takes HTM results files and evaluate results to get confusion matrix.
 # Assumes rest of system background is free from attacks
-#
+# To-do: 15 minute window evaluation
+# To-do: Time until anomaly detected
 #---------------------------------------------------------------------------------
 from __future__ import division
 import os
 import csv
+import collections
 import re
 
-ATTACK_LOG = "/home/cmao/Repos/nsf-cici/data/test/attack_test.csv"
-RESULT_DIR = "/home/cmao/Repos/nsf-cici/data/test/results/"
-EVAL_DIR = "/home/cmao/Repos/nsf-cici/data/test/eval/"
+ATTACK_LOG = "/home/cmao/Repos/nsf-cici/data/experiment1/results/periodic_attack_log.csv"
+RESULT_DIR = "/home/cmao/Repos/nsf-cici/data/experiment1/results/htmstudio/"
+EVAL_DIR = "/home/cmao/Repos/nsf-cici/data/experiment1/eval/"
 
-def directory_exists(dirpath):
+def check_directory_exists(dirpath):
 	"""
 	Description: Check that a directory path exists
 	:param dirpath: <string> Full directory path
@@ -40,6 +42,19 @@ def get_directory_files(dirpath):
 	return dirFiles
 
 
+def get_precision(TPos, FPos):
+	"""
+	Description: Get precision of positive predictive value (PPV)
+	:param TPos: <int> Number of true positives
+	:param FPos: <int> Number of false positives
+	:return: precision <float>
+	"""
+	try:
+		precision = TPos / (TPos + FPos)
+		return precision
+	except ZeroDivisionError:
+		return 0
+
 def get_accuracy(Tpos, Fpos, Tneg, Fneg):
 	"""
 	Description: Get accuracy of results
@@ -49,11 +64,23 @@ def get_accuracy(Tpos, Fpos, Tneg, Fneg):
 	:param Fneg: <int> Number of false negatives
 	:return: accuracy: <float> Accuracy
 	"""
-	pos = Tpos + Fneg
-	neg = Tneg + Fpos
-	accuracy = (Tpos + Tneg) / (pos + neg)
-	return accuracy
+	try:
+		pos = Tpos + Fneg
+		neg = Tneg + Fpos
+		accuracy = (Tpos + Tneg) / (pos + neg)
+		return accuracy
+	except ZeroDivisionError:
+		return 0
 
+
+def validate_matrix(TPR, FPR, TNR, FNR):
+	if TPR + FNR != 1:
+		valid = False
+	if FPR  + TNR != 1:
+		valid = False
+	else:
+		valid = True
+	return valid
 
 def get_matching_matrix(Tpos, Fpos, Tneg, Fneg):
 	"""
@@ -73,6 +100,10 @@ def get_matching_matrix(Tpos, Fpos, Tneg, Fneg):
 	TNR = Tneg / neg  # True Negative Rate (TNR) Specificity
 	FNR = Fneg / pos  # False Negative Rate (FNR) Miss-rate
 
+	valid = validate_matrix(TPR, FPR, TNR, FNR)
+	if not valid:
+		raise Exception
+		print "Results not valid"
 	return TPR, FPR, TNR, FNR
 
 def get_windowed_data(datadict):
@@ -87,31 +118,31 @@ def get_windowed_data(datadict):
 	winDict = {}
 	charDict = {} #Window characteristics: attack, interval
 	intDict = {} #Interval of timestamp:score
-	winCount, baseCount, atkCount = 0, 0, 0
+	winCount, baseWin, atkWin, baseCount, atkCount, = 0, 0, 0, 0, 0
 	for key in sorted(datadict):
-		attackVal = datadict[key]["attack"]
-		anomalyVal = datadict[key]["anomaly_level"]
-		print key, anomalyVal
+		attackVal = datadict[key].get("attack")
+		anomalyVal = datadict[key].get("anomaly_level")
+#		print key, anomalyVal
 		# First window is Baseline
 		if attackVal == str(0) and baseCount == 0 and atkCount == 0:
-			print "Baseline Window Start"
-			print attackVal
+#			print "Baseline Window Start"
+#			print attackVal
 			baseCount += 1
 			charDict["attack"] = attackVal
 			intDict[key] = anomalyVal
 		# Baseline Window continues
 		elif attackVal == str(0) and baseCount > 0:
-			print attackVal
-	#		print "Baseline Window"
+#			print attackVal
+#			print "Baseline Window"
 			baseCount += 1
 			intDict[key] = anomalyVal
 		# Baseline Window ends and Attack window begins
 		elif attackVal == str(1) and baseCount > 0 and atkCount == 0:
-			print "Baseline Window ends"
-			# Add baseline window and reset
+#			print "Baseline Window ends"
+			# Add baseline window and reset counters
 			charDict["interval"] = intDict
-			print "Window", winCount
-			print charDict
+#			print "Window", winCount
+#			print charDict
 			winDict[winCount] = charDict
 			intDict = {}
 			charDict = {}
@@ -119,46 +150,49 @@ def get_windowed_data(datadict):
 			baseCount = 0
 			winCount +=1
 			atkCount += 1
+			baseWin +=1
 			# Start Attack Window
 #			print "Start Attack Window "
-			print attackVal
+#			print attackVal
 			charDict["attack"] = attackVal
 			intDict[key] = anomalyVal
 		# First window is an Attack
 		elif attackVal == str(1) and atkCount == 0 and baseCount == 0:
-			print "Attack Window Start"
-			print attackVal
+#			print "Attack Window Start"
+#			print attackVal
 			atkCount +=1
 			charDict["attack"] = attackVal
 			intDict[key] = anomalyVal
 		# Attack Window continues
 		elif attackVal == str(1) and atkCount > 0:
 	#		print "Attack Window"
-			print attackVal
+#			print attackVal
 			atkCount += 1
 			intDict[key] = anomalyVal
 		# Attack Window ends and Baseline Window begins
 		if attackVal == str(0) and baseCount == 0 and atkCount > 0:
-			print "Attack Window ends"
-
+#			print "Attack Window ends"
 			# Add Attack Window and reset
 			charDict["interval"] = intDict
-			print "Window", winCount
-			print charDict
+#			print "Window", winCount
+#			print charDict
 			winDict[winCount] = charDict
 			intDict, charDict = {}, {}
 			# Counters
 			atkCount, baseCount = 0, 0
 			winCount += 1
 			baseCount += 1
+			atkWin +=1
 			# Start Baseline window
-			print "Start Baseline Window"
-			print attackVal
+#			print "Start Baseline Window"
+#			print attackVal
 			charDict["attack"] = attackVal
 			intDict[key] = anomalyVal
-	print "Total Windows:", winCount + 1
+	print "Total Windows:", winCount
+	print "Total Attack Windows:", atkWin
+	print "Total Baseline Windows", baseWin
 #	print winDict
-	return winDict
+	return (winCount, baseWin, atkWin, winDict)
 
 
 def get_windowed_results(windict):
@@ -177,7 +211,7 @@ def get_windowed_results(windict):
 		window = windict[winNum]
 		attack = window["attack"]
 		interval = window["interval"]
-		print winNum, attack, interval
+		print "window", winNum, "attack", attack, interval
 		if attack == str(1):
 			# True Positive
 			if 'HIGH' in interval.values():
@@ -196,11 +230,15 @@ def get_windowed_results(windict):
 			else:
 				print "FP"
 				FPwin += 1
-	print TPwin, FPwin, TNwin, FNwin
+	results = [TPwin, FPwin, TNwin, FNwin]
+	print results
 	winMatrix = list(get_matching_matrix(TPwin, FPwin, TNwin, FNwin))
 	winAcc = get_accuracy(TPwin, FPwin, TNwin, FNwin)
-	results = winMatrix
+	winPrecision = get_precision(TPwin,FPwin)
+	results.extend(winMatrix)
 	results.append(winAcc)
+	results.append(winPrecision)
+	print results
 	return results
 
 
@@ -214,29 +252,40 @@ def get_per_step_results(datadict):
 							False Negative Rate,
 							Accuracy
 	"""
-	print("Per Second Confusion Matrix ")
-	TP, TN, FP, FN = 0, 0, 0, 0
-	for key in datadict:
-		anomLvl = datadict[key]["anomaly_level"]
-		attackVal = datadict[key]["attack"]
+	try:
+		print("Per Second Matching Matrix ")
+		TP, TN, FP, FN = 0, 0, 0, 0
+		print len(datadict)
+		for key in sorted(datadict):
+			print key, datadict[key]
+			anomLvl = datadict[key].get("anomaly_level")
+			attackVal = datadict[key].get("attack")
+			if(anomLvl == 'HIGH' and attackVal == str(1)): # Hit
+				TP += 1
+	#			print anomLvl, attackVal,  "TP", TP
+			elif(anomLvl != 'HIGH' and attackVal == str(1)): # Miss
+				FN += 1
+	#			print anomLvl, attackVal, "FN", FN
+			elif(anomLvl == 'HIGH' and attackVal == str(0)): # False Alarm
+				FP += 1
+	#			print anomLvl, attackVal, "FP", FP
+			else:#(anomLvl != 'HIGH' and attackVal == str(0)): # True Negative
+				TN += 1
+	#			print anomLvl, attackVal, "TN", TN
 
-		if(anomLvl == 'HIGH' and attackVal == str(1)): # Hit
-			TP += 1
-#			print anomLvl, attackVal,  "TP", TP
-		elif(anomLvl != 'HIGH' and attackVal == str(1)): # Miss
-			FN += 1
-#			print anomLvl, attackVal, "FN", FN
-		elif(anomLvl == 'HIGH' and attackVal == str(0)): # False Alarm
-			FP += 1
-#			print anomLvl, attackVal, "FP", FP
-		else:#(anomLvl != 'HIGH' and attackVal == str(0)): # True Negative
-			TN += 1
-#			print anomLvl, attackVal, "TN", TN
-	matrix = list(get_matching_matrix(TP,FP, TN, FN))
-	accuracy = get_accuracy(TP, FP, TN, FN)
-	results = matrix
-	results.append(accuracy)
-	return results
+		print TP, FP, TN, FN
+		results = [TP, FP, TN, FN]
+		matrix = list(get_matching_matrix(TP,FP, TN, FN))
+		accuracy = get_accuracy(TP, FP, TN, FN)
+		precision = get_precision(TP,FP)
+		results.extend(matrix)
+		results.append(accuracy)
+		results.append(precision)
+		print results
+		return results
+	except KeyError:
+		KeyError
+
 
 
 def results_to_dict(resultspath, attackpath):
@@ -247,58 +296,103 @@ def results_to_dict(resultspath, attackpath):
 	:param attackpath: <string> Full path to timestamped attack log file (.csv)
 	:return: datadict: <dictionary>  timestamp : innerdict
 	'''
+	#To-Do: Add datetime format checking to check for MM/DD/YYY HH:MM:SS
 	dataDict = {}
-	with open(resultspath, 'r') as resultsfile:
-		resultsRows = csv.DictReader(resultsfile, delimiter = ',')
-		for row in resultsRows:
+	with open(resultspath, 'r') as resultsfile, open(attackpath, 'r') as attacklog:
+		resultsReader = csv.DictReader(resultsfile, delimiter = ',')
+		attackReader = csv.DictReader(attacklog, delimiter=',')
+		for resultRow in resultsReader:
+	#		print resultRow
+			timestamp = resultRow["timestamp"]
 			innerdict = {}
-			timestamp = row["timestamp"]
-			for ind, key in enumerate(row):
-				if not (key == "timestamp"):
+			for ind, key in enumerate(resultRow):
+				if not(key == "timestamp"):
 					innerKey = key
-					innerVal = row[key]
+					innerVal = resultRow[key]
 					innerdict[innerKey] = innerVal
-			dataDict[timestamp] = innerdict
-	#Append Attack log to nested dictionary
-	with open(attackpath, 'r') as attacklog:
-		attackRows = csv.DictReader(attacklog, delimiter = ',')
-		for row in attackRows:
-			attackTime = row["timestamp"]
-			attackValue = row["attack"]
+					dataDict[timestamp] = innerdict
+		'''
+		# Append attack log to nested dictionary
+		for resultRow in resultsReader:
+			timestamp = resultRow["timestamp"]
+			print timestamp
+		'''
+		# Append attack log times
+		for attackRow in attackReader:
+			attackTime = attackRow["timestamp"]
+			attackValue = attackRow["attack"]
 			if attackTime in dataDict:
+#				print timestamp, attackTime
 				dataDict[attackTime]["attack"] = attackValue
+#				print dataDict[attackTime]
+		# Throw out rows missing attack
+		rowsToDel = []
+		for time in dataDict:
+			if 'attack' not in dataDict[time].keys():
+#				print time, dataDict[time]
+				rowsToDel.append(time)
+		for row in rowsToDel:
+			dataDict.pop(row)
 	return dataDict
 
 
 if __name__ == "__main__":
-	resultfiles = get_directory_files(RESULT_DIR)
-	directory_exists(EVAL_DIR)
-	print resultfiles
-	for aFile in resultfiles:
-		data = results_to_dict(aFile, ATTACK_LOG)
+	files = get_directory_files(RESULT_DIR)
+	check_directory_exists(EVAL_DIR)
+	for aFile in files:
+		print "Evaluating " + aFile
+
+		# To-do: Fix with regex?
+		# Get Out file name
 		split = aFile.split("/")
-		fullname = split[-1]
-		filename = fullname.split(".")
-		print filename
-		#To-do: Fix with regex
-		"""
-		searchpattern = "/\\w*.$"
-		match = re.search(searchpattern, aFile) #fix regex to get file name only
-		if match:
-			print match.group()
-		"""
-		outFileName = EVAL_DIR + filename[0]  + "_eval.txt"
+		file = split[-1]
+		filename = file.split(".")
+
+		# Get Per Step results
+		outFileName = EVAL_DIR + filename[0]  + "_eval_perstep.txt"
+		header = [
+			"true_positive",
+			"false_positive",
+			"true_negative",
+			"false_negative",
+			"true_positive_rate",
+			"false_positive_rate",
+			"true_negative_rate",
+			"false_negative_rate",
+			"accuracy",
+			"precision"]
 		with open(outFileName, "w+" ) as evalFile:
 			evalWriter = csv.writer(evalFile)
-			header = ["TPR", "FPR", "TNR", "FNR", "Acc", "TPRWin", "FPRWin", "TNRWin", "FNRWin", "AccWin"]
 			evalWriter.writerow(header)
-			# Get Per Second Results
-			persecResults = get_per_step_results(data)
-			print persecResults
 
-			# Get Windowed Results
-			windowedData = get_windowed_data(data)
-			windowedResults = get_windowed_results(windowedData)
+			data = results_to_dict(aFile, ATTACK_LOG)
+			stepResults = get_per_step_results(data)
+			evalWriter.writerow(stepResults)
 
-			row = persecResults + windowedResults
-			evalWriter.writerow(row)
+		# Get Windowed results
+		outFileName = EVAL_DIR + filename[0] + "_eval_window.txt"
+		winHeader = ["windows",
+				"base_windows",
+				"attack_windows",
+				"true_positive",
+				"false_positive",
+				"true_negative",
+				"false_negative",
+				"true_positive_rate",
+				"false_positive_rate",
+				"true_negative_rate",
+				"false_negative_rate",
+				"accuracy",
+				"precision"]
+		with open(outFileName, "w+" ) as evalFile:
+			evalWriter = csv.writer(evalFile)
+			evalWriter.writerow(winHeader)
+			winResults = []
+
+			winData = get_windowed_data(data)
+			winDict = winData[3]
+			winMatrix = get_windowed_results(winDict)
+			print winData[0:3]
+			winResults.extend(list(winData[0:3]))
+			winResults.extend(winMatrix)
+			evalWriter.writerow(winResults)

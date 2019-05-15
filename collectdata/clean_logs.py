@@ -15,13 +15,13 @@ import csv
 import collections  # To sort dictionaries
 from operator import sub
 
-ROOTDIR = "/home/cmao/Repos/nsf-cici/data/experiment1/"
+ROOTDIR = "/home/cmao/Repos/nsf-cici/data/experiment4"
 
 #Set filedate
-FILEDATE = "2019-04-24"
+FILEDATE = "2019-04-30"
 # Set Input (Raw ProcFS logs) directory
-STATDIR = ROOTDIR + "/procfs/raw/"
-NETDIR = ROOTDIR + "/procfs/raw/"
+STATDIR = ROOTDIR + "/procfs/"
+NETDIR = ROOTDIR + "/procfs/"
 # Set Output directory
 OUTDIR = ROOTDIR + "/procfs/clean/"
 
